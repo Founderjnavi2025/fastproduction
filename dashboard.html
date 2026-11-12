@@ -180,6 +180,147 @@ main { padding-bottom: 125px; }
 @media(prefers-reduced-motion:reduce){
   .slide{transition:none}
 }
+
+/* MOBILE LAYOUT REFINEMENT */
+@media (max-width: 600px) {
+  .topbar {
+    height: 66px;
+    padding: 0 17px;
+    gap: 12px;
+    overflow: hidden;
+  }
+
+  .brand {
+    font-size: 12px;
+    letter-spacing: 1.2px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .top-meta {
+    display: none;
+  }
+
+  .profile-link {
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  main {
+    width: 100%;
+    padding: 30px 17px 115px;
+    overflow: hidden;
+  }
+
+  .intro {
+    align-items: flex-end;
+    gap: 8px;
+    margin-bottom: 22px;
+  }
+
+  .intro h1 {
+    font-size: 38px;
+    letter-spacing: -2px;
+  }
+
+  .intro p {
+    font-size: 12px;
+  }
+
+  .counter {
+    white-space: nowrap;
+    font-size: 10px;
+    padding-bottom: 4px;
+  }
+
+  .stage {
+    width: 100%;
+    min-height: 435px;
+    overflow: hidden;
+    perspective: 1100px;
+  }
+
+  .slide {
+    width: 100%;
+    height: 405px;
+    padding: 25px 23px;
+    border-radius: 21px;
+  }
+
+  .slide.before {
+    transform: translateX(-10%) scale(.94);
+    opacity: .06;
+  }
+
+  .slide.after {
+    transform: translateX(10%) scale(.94);
+    opacity: .06;
+  }
+
+  .slide.active {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+
+  .card-content h2 {
+    font-size: 48px;
+    letter-spacing: -3px;
+  }
+
+  .member-name {
+    font-size: 34px !important;
+  }
+
+  .card-content p {
+    font-size: 12px;
+    line-height: 1.7;
+  }
+
+  .dots {
+    margin: 12px 0 17px;
+  }
+
+  .controls {
+    gap: 10px;
+  }
+
+  .arrow {
+    width: 42px;
+    height: 42px;
+  }
+
+  .hint {
+    margin-top: 14px;
+    font-size: 9px;
+  }
+
+  .bottom-nav {
+    bottom: 17px;
+    width: calc(100% - 34px);
+    height: 66px;
+    padding: 0 8px;
+    border-radius: 21px;
+    background: rgba(25, 30, 24, .96);
+    border-color: rgba(255,255,255,.2);
+  }
+
+  .bottom-nav a {
+    color: #b2bbae;
+    font-size: 10px;
+    gap: 4px;
+  }
+
+  .bottom-nav a span {
+    font-size: 19px;
+  }
+
+  .bottom-nav a:hover,
+  .bottom-nav a.current {
+    color: var(--lime);
+    background: rgba(198,255,105,.12);
+  }
+}
+
 </style>
 </head>
 <body>
