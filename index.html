@@ -1,12 +1,438 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>FastProduction</title>
-  <meta http-equiv="refresh" content="0;url=login.html">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090d18">
+  <meta name="description" content="FastProduction — Hubungkan pekerjaan konveksi dengan mitra produksi dan kapasitas mesin.">
+  <title>FastProduction — Production Network</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/app.css">
+  <style>
+    :root {
+      --bg: #090d18;
+      --panel: #111827;
+      --line: rgba(255,255,255,.09);
+      --muted: #929db2;
+      --white: #f5f7fb;
+      --accent: #a3e635;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+    }
+    a { color: inherit; text-decoration: none; }
+    .landing { overflow: hidden; }
+    .nav {
+      max-width: 1160px;
+      margin: auto;
+      padding: 24px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      font: 700 23px 'Space Grotesk', sans-serif;
+      letter-spacing: -1px;
+    }
+    .brand span { color: var(--accent); }
+    .nav-actions { display: flex; gap: 12px; align-items: center; }
+    .nav-login {
+      color: #c4ccda;
+      padding: 11px 17px;
+      font-weight: 600;
+    }
+    .nav-join, .primary-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: #17220b;
+      border-radius: 10px;
+      padding: 13px 21px;
+      font-weight: 800;
+      transition: .2s;
+    }
+    .nav-join:hover, .primary-btn:hover {
+      background: #bef264;
+      transform: translateY(-2px);
+    }
+    .hero {
+      max-width: 1160px;
+      margin: auto;
+      padding: 92px 28px 100px;
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 60px;
+      align-items: center;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--accent);
+      background: rgba(163,230,53,.08);
+      border: 1px solid rgba(163,230,53,.2);
+      padding: 8px 13px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .dot {
+      width: 7px;
+      height: 7px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 12px var(--accent);
+    }
+    h1 {
+      font: 700 clamp(42px, 6vw, 72px)/1.08 'Space Grotesk', sans-serif;
+      letter-spacing: -3px;
+      margin: 25px 0 22px;
+    }
+    h1 span { color: var(--accent); }
+    .hero-copy {
+      max-width: 560px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.8;
+    }
+    .hero-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 13px;
+      margin-top: 32px;
+    }
+    .secondary-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 13px 21px;
+      font-weight: 700;
+      color: #dce3ee;
+    }
+    .secondary-btn:hover { background: rgba(255,255,255,.06); }
+    .hero-note {
+      color: #738096;
+      font-size: 12px;
+      margin-top: 20px;
+    }
+    .visual {
+      position: relative;
+      min-height: 390px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .visual-glow {
+      position: absolute;
+      width: 280px;
+      height: 280px;
+      background: rgba(163,230,53,.12);
+      filter: blur(90px);
+      border-radius: 50%;
+    }
+    .dashboard-card {
+      position: relative;
+      width: 100%;
+      max-width: 410px;
+      background: linear-gradient(145deg,#172236,#101827);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 30px 90px rgba(0,0,0,.35);
+      transform: rotate(-2deg);
+    }
+    .mock-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .mock-label { color: #9ba8bd; font-size: 12px; }
+    .mock-status {
+      color: var(--accent);
+      background: rgba(163,230,53,.1);
+      padding: 6px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .mock-title {
+      font: 600 23px 'Space Grotesk';
+      margin: 22px 0 5px;
+    }
+    .mock-sub { color: var(--muted); font-size: 12px; }
+    .mock-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 22px;
+    }
+    .mock-stat {
+      background: rgba(255,255,255,.045);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 15px;
+    }
+    .mock-stat strong {
+      display: block;
+      font: 700 25px 'Space Grotesk';
+    }
+    .mock-stat small { color: var(--muted); font-size: 11px; }
+    .mock-progress {
+      height: 7px;
+      border-radius: 10px;
+      background: #263247;
+      margin-top: 24px;
+      overflow: hidden;
+    }
+    .mock-progress span {
+      display: block;
+      width: 68%;
+      height: 100%;
+      background: var(--accent);
+      border-radius: inherit;
+    }
+    .mock-footer {
+      display: flex;
+      justify-content: space-between;
+      color: #9ba8bd;
+      font-size: 11px;
+      margin-top: 10px;
+    }
+    .section {
+      border-top: 1px solid var(--line);
+      padding: 85px 28px;
+    }
+    .section-inner { max-width: 1160px; margin: auto; }
+    .section-heading {
+      max-width: 650px;
+      margin-bottom: 38px;
+    }
+    .section-heading h2 {
+      font: 700 clamp(30px,4vw,43px)/1.2 'Space Grotesk';
+      letter-spacing: -1.5px;
+      margin: 12px 0;
+    }
+    .section-heading p { color: var(--muted); line-height: 1.7; }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 17px;
+    }
+    .feature {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 25px;
+    }
+    .feature-icon {
+      width: 43px;
+      height: 43px;
+      display: grid;
+      place-items: center;
+      background: rgba(163,230,53,.1);
+      border-radius: 12px;
+      color: var(--accent);
+      font-size: 21px;
+    }
+    .feature h3 {
+      font: 600 19px 'Space Grotesk';
+      margin: 20px 0 9px;
+    }
+    .feature p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+      margin: 0;
+    }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 25px;
+    }
+    .step-number {
+      color: var(--accent);
+      font: 700 14px 'Space Grotesk';
+    }
+    .step h3 { font: 600 20px 'Space Grotesk'; }
+    .step p { color: var(--muted); font-size: 14px; line-height: 1.7; }
+    .cta {
+      margin: 0 auto 85px;
+      max-width: 1104px;
+      padding: 55px 35px;
+      border-radius: 20px;
+      border: 1px solid rgba(163,230,53,.2);
+      background: linear-gradient(120deg,#182719,#111827 75%);
+      text-align: center;
+    }
+    .cta h2 {
+      font: 700 clamp(29px,4vw,42px) 'Space Grotesk';
+      margin: 0 0 12px;
+    }
+    .cta p { color: var(--muted); margin-bottom: 25px; }
+    .footer {
+      border-top: 1px solid var(--line);
+      padding: 28px;
+      color: #748096;
+      font-size: 12px;
+      text-align: center;
+    }
+    @media(max-width:800px) {
+      .hero { grid-template-columns: 1fr; padding-top: 65px; gap: 35px; }
+      .visual { min-height: 340px; }
+      .feature-grid { grid-template-columns: 1fr 1fr; }
+      .steps { grid-template-columns: 1fr; gap: 15px; }
+    }
+    @media(max-width:520px) {
+      .nav { padding: 19px 18px; }
+      .brand { font-size: 20px; }
+      .nav-actions { gap: 3px; }
+      .nav-login { padding: 10px; font-size: 13px; }
+      .nav-join { padding: 11px 13px; font-size: 12px; }
+      .hero { padding: 55px 20px 65px; }
+      h1 { letter-spacing: -2px; }
+      .hero-copy { font-size: 15px; }
+      .visual { min-height: 310px; }
+      .dashboard-card { padding: 19px; }
+      .section { padding: 65px 20px; }
+      .feature-grid { grid-template-columns: 1fr; }
+      .cta { margin: 0 15px 60px; padding: 40px 20px; }
+    }
+  </style>
 </head>
 <body>
-  <a href="login.html">Masuk FastProduction</a>
+<div class="landing">
+
+  <nav class="nav">
+    <a href="index.html" class="brand">FAST<span>PRODUCTION</span></a>
+    <div class="nav-actions">
+      <a href="login.html" class="nav-login">Masuk</a>
+      <a href="register.html" class="nav-join">Daftar Gratis ↗</a>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <div>
+        <div class="eyebrow"><span class="dot"></span> Production Network</div>
+        <h1>Produksi lebih mudah.<br><span>Kolaborasi lebih luas.</span></h1>
+        <p class="hero-copy">
+          Platform yang menghubungkan pemilik pekerjaan, tenaga produksi,
+          dan pemilik mesin dalam satu jaringan kerja konveksi.
+          Temukan pekerjaan dan mitra produksi dalam satu tempat.
+        </p>
+        <div class="hero-buttons">
+          <a href="register.html" class="primary-btn">Mulai Bergabung ↗</a>
+          <a href="login.html" class="secondary-btn">Saya Sudah Punya Akun</a>
+        </div>
+        <div class="hero-note">Satu akun. Banyak peluang produksi.</div>
+      </div>
+
+      <div class="visual">
+        <div class="visual-glow"></div>
+        <div class="dashboard-card">
+          <div class="mock-top">
+            <strong>Production Overview</strong>
+            <span class="mock-status">● Active</span>
+          </div>
+          <div class="mock-label" style="margin-top:24px">WORKSPACE / SCOPE</div>
+          <div class="mock-title">Produksi Apparel</div>
+          <div class="mock-sub">Pekerjaan produksi · Konveksi</div>
+          <div class="mock-stats">
+            <div class="mock-stat">
+              <strong>500</strong>
+              <small>Target produksi (pcs)</small>
+            </div>
+            <div class="mock-stat">
+              <strong>68%</strong>
+              <small>Progres pekerjaan</small>
+            </div>
+          </div>
+          <div class="mock-progress"><span></span></div>
+          <div class="mock-footer">
+            <span>Production progress</span>
+            <span>340 / 500 pcs</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-inner">
+        <div class="section-heading">
+          <div class="eyebrow">Ekosistem Produksi</div>
+          <h2>Satu jaringan untuk berbagai kebutuhan produksi.</h2>
+          <p>Baik kamu mencari mitra produksi maupun menawarkan kapasitas kerja, FastProduction menyediakan ruang untuk saling terhubung.</p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature">
+            <div class="feature-icon">⌑</div>
+            <h3>Buat Scope Pekerjaan</h3>
+            <p>Publikasikan detail pekerjaan, target jumlah, deadline, dan kebutuhan produksi.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-icon">⚙</div>
+            <h3>Inventaris Mesin</h3>
+            <p>Catat mesin yang kamu miliki dan kelola kapasitas produksi dalam satu akun.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-icon">⇄</div>
+            <h3>Temukan Mitra</h3>
+            <p>Temukan pekerjaan yang tersedia atau pilih mitra untuk mengerjakan Scope kamu.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-inner">
+        <div class="section-heading">
+          <div class="eyebrow">Cara Kerja</div>
+          <h2>Mulai dari kebutuhan, lanjut ke produksi.</h2>
+        </div>
+        <div class="steps">
+          <article class="step">
+            <div class="step-number">01 / DAFTAR</div>
+            <h3>Buat akun</h3>
+            <p>Daftar dan lengkapi profil agar pengguna lain mengenal identitas produksimu.</p>
+          </article>
+          <article class="step">
+            <div class="step-number">02 / HUBUNGKAN</div>
+            <h3>Buat atau ambil pekerjaan</h3>
+            <p>Buat Scope pekerjaan baru atau ajukan diri pada pekerjaan yang tersedia.</p>
+          </article>
+          <article class="step">
+            <div class="step-number">03 / PRODUKSI</div>
+            <h3>Mulai berkolaborasi</h3>
+            <p>Setelah mitra dipilih, ruang kerja produksi menjadi tempat koordinasi bersama.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta">
+      <h2>Siap terhubung dengan jaringan produksi?</h2>
+      <p>Bangun peluang kerja dan temukan mitra produksi bersama FastProduction.</p>
+      <a href="register.html" class="primary-btn">Buat Akun Sekarang ↗</a>
+    </section>
+  </main>
+
+  <footer class="footer">
+    © 2026 FastProduction. Production Network Platform.
+  </footer>
+</div>
 </body>
 </html>
