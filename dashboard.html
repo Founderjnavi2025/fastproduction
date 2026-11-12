@@ -1,30 +1,268 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dashboard · FastProduction</title>
-  <link rel="stylesheet" href="assets/css/app.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#10120f">
+<title>FastProduction — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#10120f;
+  --panel:#191d18;
+  --line:rgba(255,255,255,.12);
+  --muted:#899187;
+  --lime:#c6ff69;
+  --white:#f3f5ed;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--white);
+  font-family:'Space Grotesk',sans-serif;
+  min-height:100vh;overflow-x:hidden;
+}
+button,a{font:inherit}
+button{cursor:pointer}
+.topbar{
+  height:76px;padding:0 5vw;display:flex;align-items:center;
+  justify-content:space-between;border-bottom:1px solid var(--line);
+}
+.brand{font-size:14px;font-weight:700;letter-spacing:2px}
+.brand span{color:var(--lime)}
+.top-meta{font:10px 'DM Mono';color:var(--muted);letter-spacing:1px}
+.profile-link{
+  width:38px;height:38px;border:1px solid var(--line);
+  border-radius:50%;display:grid;place-items:center;
+  color:var(--lime);text-decoration:none;font-weight:700;
+}
+main{max-width:1100px;margin:auto;padding:45px 5vw 120px}
+.eyebrow{
+  font:10px 'DM Mono';letter-spacing:2px;color:var(--lime);
+  text-transform:uppercase;
+}
+.intro{display:flex;justify-content:space-between;align-items:end;margin-bottom:28px}
+.intro h1{font-size:clamp(30px,6vw,54px);line-height:1;margin:12px 0 0;letter-spacing:-2px}
+.intro p{color:var(--muted);font-size:13px;margin:10px 0 0}
+.counter{font:12px 'DM Mono';color:var(--muted)}
+.stage{
+  position:relative;min-height:470px;perspective:1400px;
+  display:flex;justify-content:center;align-items:center;
+  touch-action:pan-y;
+}
+.slide{
+  position:absolute;width:min(100%,760px);height:430px;
+  border:1px solid var(--line);border-radius:22px;
+  overflow:hidden;padding:clamp(24px,5vw,48px);
+  display:flex;flex-direction:column;justify-content:space-between;
+  opacity:0;pointer-events:none;
+  transform:translateX(110%) rotateY(-22deg) scale(.86);
+  transition:transform .72s cubic-bezier(.2,.8,.2,1),opacity .55s ease;
+  background:#1a2019;
+}
+.slide.active{
+  opacity:1;pointer-events:auto;transform:translateX(0) rotateY(0) scale(1);
+  z-index:3;
+}
+.slide.before{
+  opacity:.28;transform:translateX(-35%) rotateY(20deg) scale(.88);
+  z-index:2;
+}
+.slide.after{
+  opacity:.28;transform:translateX(35%) rotateY(-20deg) scale(.88);
+  z-index:2;
+}
+.slide.identity{
+  background:
+   radial-gradient(ellipse at 90% 10%,rgba(198,255,105,.18),transparent 45%),
+   linear-gradient(135deg,#283527,#151b15 70%);
+}
+.slide.activity{
+  background:
+   radial-gradient(ellipse at 10% 90%,rgba(105,175,255,.17),transparent 45%),
+   linear-gradient(135deg,#202b35,#151a20);
+}
+.slide.machines{
+  background:
+   radial-gradient(ellipse at 90% 10%,rgba(255,184,105,.15),transparent 45%),
+   linear-gradient(135deg,#332a20,#1d1915);
+}
+.slide.explore{
+  background:
+   radial-gradient(ellipse at 90% 90%,rgba(198,105,255,.15),transparent 45%),
+   linear-gradient(135deg,#30233a,#1a1620);
+}
+.card-top,.card-bottom{display:flex;justify-content:space-between;align-items:center}
+.card-index{font:11px 'DM Mono';color:rgba(255,255,255,.55)}
+.card-symbol{
+  width:46px;height:46px;border:1px solid rgba(255,255,255,.22);
+  border-radius:50%;display:grid;place-items:center;font-size:20px;
+}
+.card-content h2{
+  font-size:clamp(43px,9vw,88px);letter-spacing:-5px;
+  line-height:.95;margin:18px 0 12px;font-weight:600;
+}
+.card-content p{font-size:13px;color:rgba(255,255,255,.58);max-width:390px;line-height:1.7}
+.member-name{color:var(--lime)!important;font-size:clamp(27px,5vw,42px)!important;letter-spacing:-1px!important}
+.card-bottom{border-top:1px solid rgba(255,255,255,.16);padding-top:17px}
+.card-bottom span{font:10px 'DM Mono';letter-spacing:1px;color:rgba(255,255,255,.55)}
+.card-bottom strong{font-size:11px;letter-spacing:1px}
+.card-action{
+  display:inline-flex;align-items:center;gap:12px;
+  color:var(--lime);text-decoration:none;font-size:12px;
+  letter-spacing:1px;font-weight:700;margin-top:12px;
+}
+.dots{display:flex;justify-content:center;align-items:center;gap:9px;margin:22px 0}
+.dot{
+  width:6px;height:6px;border:0;border-radius:10px;
+  background:#555d52;padding:0;transition:.3s;
+}
+.dot.active{width:28px;background:var(--lime)}
+.controls{display:flex;justify-content:center;gap:12px}
+.arrow{
+  width:46px;height:46px;border:1px solid var(--line);
+  border-radius:50%;background:transparent;color:white;font-size:18px;
+}
+.arrow:hover{background:var(--lime);color:#111;border-color:var(--lime)}
+.hint{text-align:center;color:#626b60;font:10px 'DM Mono';letter-spacing:2px;margin-top:20px}
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:10;
+  height:76px;background:rgba(16,18,15,.92);
+  backdrop-filter:blur(18px);border-top:1px solid var(--line);
+  display:flex;justify-content:center;align-items:center;gap:clamp(18px,6vw,75px);
+}
+.bottom-nav a{
+  color:var(--muted);font-size:11px;text-decoration:none;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+}
+.bottom-nav a span{font-size:17px}
+.bottom-nav a:hover,.bottom-nav a.current{color:var(--lime)}
+@media(max-width:600px){
+  .topbar{height:64px;padding:0 20px}
+  main{padding:35px 17px 110px}
+  .intro{margin-bottom:12px}
+  .stage{min-height:490px}
+  .slide{height:420px;padding:25px 23px;border-radius:19px}
+  .slide.before{transform:translateX(-15%) rotateY(15deg) scale(.88)}
+  .slide.after{transform:translateX(15%) rotateY(-15deg) scale(.88)}
+  .card-content h2{letter-spacing:-3px}
+  .bottom-nav{height:70px;gap:0;justify-content:space-around}
+  .bottom-nav a{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  .slide{transition:none}
+}
+</style>
 </head>
 <body>
-  <main class="auth-container">
-    <p>FASTPRODUCTION</p>
-    <h1 id="welcome">Memuat akun...</h1>
-    <p>Selamat datang di ruang produksi digital.</p>
+<header class="topbar">
+  <div class="brand">FAST<span>PRODUCTION</span></div>
+  <div class="top-meta">PRODUCTION NETWORK / 01</div>
+  <a href="profile.html" class="profile-link" id="profileInitial">U</a>
+</header>
 
-    <section style="margin:28px 0;padding:18px;border:1px solid #354052;border-radius:12px">
-      <h3>Akun Saya</h3>
-      <p id="email"></p>
-      <a href="profile.html">Kelola Profil →</a>
-    </section>
+<main>
+  <section class="intro">
+    <div>
+      <div class="eyebrow">YOUR WORKSPACE</div>
+      <h1>Move things<br>forward.</h1>
+      <p>Selamat datang kembali, <strong id="welcomeName">User</strong>.</p>
+    </div>
+    <div class="counter" id="slideCounter">01 / 04</div>
+  </section>
 
-    <button id="logoutButton">Keluar</button>
-    <p id="message"></p>
-  </main>
+  <section class="stage" id="stage">
+    <article class="slide identity active" data-index="0">
+      <div class="card-top">
+        <span class="eyebrow">MEMBER IDENTITY</span>
+        <div class="card-symbol">✳</div>
+      </div>
+      <div class="card-content">
+        <div class="eyebrow">THIS IS YOUR SPACE</div>
+        <h2 class="member-name" id="memberName">LOADING...</h2>
+        <p>Bagian dari jaringan produksi FastProduction. Satu identitas, banyak kemungkinan untuk bergerak.</p>
+      </div>
+      <div class="card-bottom">
+        <span>MEMBER / <span id="memberCode">FP—••••••</span></span>
+        <strong>FASTPRODUCTION®</strong>
+      </div>
+    </article>
 
-  <script src="assets/js/config.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/js/supabase.js"></script>
-  <script src="assets/js/dashboard.js"></script>
+    <article class="slide activity" data-index="1">
+      <div class="card-top">
+        <span class="eyebrow">YOUR ACTIVITY</span>
+        <div class="card-symbol">↗</div>
+      </div>
+      <div class="card-content">
+        <div class="eyebrow">01 — WORKSPACE</div>
+        <h2>ACTIVITY.</h2>
+        <p>Semua pergerakan pekerjaanmu akan berkumpul di sini. Scope, perkembangan, dan aktivitas produksi.</p>
+        <a class="card-action" href="history.html">OPEN HISTORY ↗</a>
+      </div>
+      <div class="card-bottom">
+        <span>YOUR PRODUCTION JOURNEY</span>
+        <strong>02 / ACTIVITY</strong>
+      </div>
+    </article>
+
+    <article class="slide machines" data-index="2">
+      <div class="card-top">
+        <span class="eyebrow">YOUR MACHINES</span>
+        <div class="card-symbol">⚙</div>
+      </div>
+      <div class="card-content">
+        <div class="eyebrow">02 — INVENTORY</div>
+        <h2 id="machineCount">MACHINES.</h2>
+        <p id="machineDescription">Peralatan produksi yang terhubung dengan identitasmu.</p>
+        <a class="card-action" href="inventaris-mesin.html">OPEN INVENTORY ↗</a>
+      </div>
+      <div class="card-bottom">
+        <span>PERSONAL EQUIPMENT</span>
+        <strong>03 / MACHINES</strong>
+      </div>
+    </article>
+
+    <article class="slide explore" data-index="3">
+      <div class="card-top">
+        <span class="eyebrow">OPEN NETWORK</span>
+        <div class="card-symbol">⌁</div>
+      </div>
+      <div class="card-content">
+        <div class="eyebrow">03 — OPPORTUNITY</div>
+        <h2>LET'S<br>PRODUCE.</h2>
+        <p>Temukan pekerjaan, terhubung dengan pemilik Scope, dan ambil bagian dalam jaringan produksi.</p>
+        <a class="card-action" href="jobs.html">EXPLORE JOBS ↗</a>
+      </div>
+      <div class="card-bottom">
+        <span>WORK / CONNECT / CREATE</span>
+        <strong>04 / EXPLORE</strong>
+      </div>
+    </article>
+  </section>
+
+  <div class="dots" id="dots">
+    <button class="dot active" aria-label="Identity"></button>
+    <button class="dot" aria-label="Activity"></button>
+    <button class="dot" aria-label="Machines"></button>
+    <button class="dot" aria-label="Explore"></button>
+  </div>
+  <div class="controls">
+    <button class="arrow" id="prev" aria-label="Previous">←</button>
+    <button class="arrow" id="next" aria-label="Next">→</button>
+  </div>
+  <div class="hint">SWIPE / DRAG TO NAVIGATE</div>
+</main>
+
+<nav class="bottom-nav">
+  <a href="profile.html"><span>◉</span>Profile</a>
+  <a href="jobs.html"><span>⌕</span>Jobs</a>
+  <a href="create-scope.html"><span>＋</span>Create Scope</a>
+  <a href="history.html"><span>↗</span>History</a>
+</nav>
+
+<script src="assets/js/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase.js"></script>
+<script src="assets/js/dashboard.js"></script>
 </body>
 </html>
