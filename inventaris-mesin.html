@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inventaris Mesin · FastProduction</title>
+  <link rel="stylesheet" href="assets/css/app.css">
+  <style>
+    .machine-card {
+      padding: 16px;
+      margin-top: 12px;
+      border: 1px solid #354052;
+      border-radius: 12px;
+      background: #111722;
+    }
+    .machine-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0;
+    }
+    .machine-tag {
+      padding: 5px 9px;
+      border-radius: 7px;
+      background: #263344;
+      color: #cbd5e1;
+      font-size: 12px;
+    }
+    .machine-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .machine-actions button {
+      flex: 1;
+    }
+    .secondary {
+      background: #354052;
+    }
+    .danger {
+      background: #a83245;
+    }
+    .section-title {
+      margin-top: 30px;
+    }
+    .empty {
+      padding: 24px;
+      text-align: center;
+      border: 1px dashed #354052;
+      border-radius: 12px;
+      color: #aab3c2;
+    }
+  </style>
+</head>
+<body>
+  <main class="auth-container" style="width:min(650px,calc(100% - 24px))">
+    <a href="dashboard.html">← Dashboard</a>
+
+    <h1>Inventaris Mesin</h1>
+    <p>Daftarkan mesin yang kamu miliki untuk kebutuhan produksi.</p>
+
+    <section>
+      <h2 id="formTitle">Tambah Mesin</h2>
+
+      <form id="machineForm">
+        <input type="hidden" id="machineId">
+
+        <label>Nama Mesin</label>
+        <input id="machineName" required
+          placeholder="Contoh: Mesin Obras">
+
+        <label>Kategori</label>
+        <select id="category">
+          <option>Jahit Utama</option>
+          <option>Obras dan Rajut</option>
+          <option>Pemotongan</option>
+          <option>Finishing</option>
+          <option>Bordir dan Printing</option>
+          <option>Mesin Khusus</option>
+          <option>Pendukung</option>
+          <option>Lainnya</option>
+        </select>
+
+        <label>Merek</label>
+        <input id="brand" placeholder="Contoh: Juki">
+
+        <label>Model / Tipe</label>
+        <input id="model" placeholder="Contoh: M600">
+
+        <label>Jumlah Mesin</label>
+        <input id="quantity" type="number" min="1" value="1" required>
+
+        <label>Kondisi Mesin</label>
+        <select id="machineCondition">
+          <option value="baik">Baik</option>
+          <option value="perlu_perbaikan">Perlu Perbaikan</option>
+          <option value="rusak">Rusak</option>
+        </select>
+
+        <label>Catatan</label>
+        <textarea id="notes" rows="3"
+          placeholder="Catatan tambahan..."></textarea>
+
+        <button type="submit" id="saveButton">Simpan Mesin</button>
+        <button type="button" class="secondary"
+          id="cancelEdit" hidden>Batal Edit</button>
+      </form>
+
+      <p id="message"></p>
+    </section>
+
+    <section>
+      <h2 class="section-title">Mesin Saya</h2>
+      <p id="machineCount">Memuat inventaris...</p>
+      <div id="machineList"></div>
+    </section>
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/machines.js"></script>
+</body>
+</html>

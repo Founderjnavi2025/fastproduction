@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Daftar · FastProduction</title>
+  <link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+  <main class="auth-container">
+    <h1>Buat Akun</h1>
+    <p>Satu akun untuk seluruh aktivitas produksi.</p>
+
+    <form id="registerForm">
+      <label for="fullName">Nama Lengkap</label>
+      <input id="fullName" type="text" required autocomplete="name">
+
+      <label for="email">Email</label>
+      <input id="email" type="email" required autocomplete="email">
+
+      <label for="password">Password</label>
+      <input id="password" type="password" minlength="8" required autocomplete="new-password">
+
+      <button type="submit">Daftar</button>
+    </form>
+
+    <p id="message"></p>
+    <a href="login.html">Sudah punya akun? Login</a>
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/auth.js"></script>
+</body>
+</html>
