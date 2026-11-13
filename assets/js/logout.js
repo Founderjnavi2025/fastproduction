@@ -8,30 +8,19 @@
       button = document.createElement("button");
       button.id = "logoutButton";
       button.type = "button";
+      button.className = "logout-btn";
       button.textContent = "LOGOUT";
 
-      const header = document.querySelector("header");
+      const target =
+        document.querySelector(".profile-actions") ||
+        document.querySelector("header");
 
-      if (header) {
-        header.appendChild(button);
+      if (target) {
+        target.appendChild(button);
       } else {
         document.body.appendChild(button);
       }
     }
-
-    Object.assign(button.style, {
-      padding: "9px 13px",
-      margin: "8px",
-      border: "1px solid rgba(255,255,255,.25)",
-      borderRadius: "8px",
-      background: "#171717",
-      color: "#fff",
-      fontSize: "11px",
-      fontWeight: "700",
-      letterSpacing: "1px",
-      cursor: "pointer",
-      flexShrink: "0"
-    });
 
     if (button.dataset.logoutBound) return;
     button.dataset.logoutBound = "true";
