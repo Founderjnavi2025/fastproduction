@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10120f">
+  <title>Room Diskusi · FastProduction</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/app.css">
+  <style>
+    :root {
+      --room-bg:#10120f;
+      --room-panel:#161a15;
+      --room-panel2:#1b211a;
+      --room-line:#2a3327;
+      --room-muted:#8b978a;
+      --room-white:#f1f5ef;
+      --room-accent:#c6ff69;
+      --room-font:'Space Grotesk',sans-serif;
+      --room-mono:'DM Mono',monospace;
+    }
+    body {
+      margin:0;
+      background:var(--room-bg);
+      color:var(--room-white);
+      font-family:var(--room-font);
+    }
+    .room-container {
+      width:min(760px,calc(100% - 28px));
+      margin:auto;
+      padding:26px 0 70px;
+    }
+    .room-back {
+      display:inline-block;
+      margin-bottom:18px;
+      color:var(--room-muted);
+      text-decoration:none;
+      font-size:13px;
+    }
+    .room-panel {
+      background:var(--room-panel);
+      border:1px solid var(--room-line);
+      border-radius:14px;
+      padding:18px;
+      margin-bottom:14px;
+    }
+    .room-panel h2 {
+      margin:0 0 14px;
+      font-size:16px;
+    }
+    .room-kicker {
+      color:var(--room-accent);
+      font:11px var(--room-mono);
+      text-transform:uppercase;
+      letter-spacing:1px;
+      margin-bottom:8px;
+    }
+    .room-title {
+      font-size:24px;
+      margin:0 0 10px;
+      overflow-wrap:anywhere;
+    }
+    .room-meta {
+      color:var(--room-muted);
+      font:12px var(--room-mono);
+      line-height:1.8;
+    }
+    .room-status {
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:20px;
+      background:rgba(198,255,105,.1);
+      color:var(--room-accent);
+      font:11px var(--room-mono);
+      margin-top:12px;
+    }
+    .room-grid {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+    }
+    .room-person {
+      background:var(--room-panel2);
+      padding:12px;
+      border-radius:10px;
+      min-width:0;
+    }
+    .room-person small {
+      display:block;
+      color:var(--room-muted);
+      font:10px var(--room-mono);
+      margin-bottom:5px;
+    }
+    .room-person strong {
+      overflow-wrap:anywhere;
+    }
+    .room-timeline {
+      display:grid;
+      gap:12px;
+    }
+    .timeline-item {
+      border-left:2px solid var(--room-line);
+      padding:2px 0 3px 13px;
+    }
+    .timeline-item strong {
+      display:block;
+      font-size:13px;
+    }
+    .timeline-item small {
+      color:var(--room-muted);
+      font:10px var(--room-mono);
+    }
+    .timeline-item p {
+      color:var(--room-muted);
+      font-size:12px;
+      margin:5px 0 0;
+      overflow-wrap:anywhere;
+    }
+    .room-form {
+      display:grid;
+      gap:10px;
+    }
+    .room-form input,
+    .room-form textarea {
+      width:100%;
+      box-sizing:border-box;
+      background:var(--room-bg);
+      color:var(--room-white);
+      border:1px solid var(--room-line);
+      border-radius:9px;
+      padding:12px;
+      font:13px var(--room-font);
+    }
+    .room-form textarea {
+      min-height:85px;
+      resize:vertical;
+    }
+    .room-button {
+      border:0;
+      border-radius:9px;
+      background:var(--room-accent);
+      color:#11150e;
+      padding:12px 16px;
+      font:700 13px var(--room-font);
+      cursor:pointer;
+    }
+    .room-button:disabled {
+      opacity:.5;
+      cursor:wait;
+    }
+    .room-button.secondary {
+      background:var(--room-panel2);
+      color:var(--room-white);
+      border:1px solid var(--room-line);
+    }
+    .room-messages {
+      display:grid;
+      gap:10px;
+      margin-bottom:16px;
+    }
+    .room-message {
+      background:var(--room-panel2);
+      border:1px solid var(--room-line);
+      border-radius:10px;
+      padding:12px;
+    }
+    .room-message.mine {
+      border-color:#566b3c;
+    }
+    .message-head {
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:7px;
+      font-size:12px;
+    }
+    .message-head small {
+      color:var(--room-muted);
+      font:10px var(--room-mono);
+    }
+    .room-message p {
+      margin:0;
+      font-size:13px;
+      line-height:1.6;
+      white-space:pre-wrap;
+      overflow-wrap:anywhere;
+    }
+    .room-empty {
+      padding:18px;
+      border:1px dashed var(--room-line);
+      border-radius:10px;
+      text-align:center;
+      color:var(--room-muted);
+      font-size:12px;
+    }
+    .room-error {
+      color:#ff9b91;
+      font-size:12px;
+    }
+    @media(max-width:520px) {
+      .room-container {
+        width:calc(100% - 24px);
+      }
+      .room-title {
+        font-size:21px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="room-container">
+    <a href="global-scope.html" class="room-back">← Global Scope</a>
+    <div id="roomRoot">
+      <div class="room-empty">Memuat Room Diskusi...</div>
+    </div>
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/deal-room.js"></script>
+</body>
+</html>
