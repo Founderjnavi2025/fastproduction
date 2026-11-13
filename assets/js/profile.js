@@ -94,140 +94,146 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function loadMachines() {
     const list = document.getElementById("machineList");
-    list.innerHTML =
-      '<p class="profile-empty">Memuat mesin...</p>';
 
-    const [machineResult, adResult] = await Promise.all([
-      db.from("user_machines")
-        .select("id, machine_name, category, brand, model, quantity, machine_condition, notes, operator_names")
+    try {
+      list.textContent = "Memuat mesin...";
+
+      const { data: machines, error } = await db
+        .from("user_machines")
+        .select("*")
         .eq("user_id", targetUserId)
-        .order("created_at", { ascending: false }),
+        .order("created_at", { ascending: false });
 
-      db.from("machine_job_ads")
-        .select("id, machine_id, status, published_at, expires_at")
-        .eq("owner_id", targetUserId)
-    ]);
+      console.log("MACHINE DEBUG:", { targetUserId, machines, error });
 
-    if (machineResult.error) {
-      list.textContent =
-        "Gagal memuat mesin: " + machineResult.error.message;
-      return;
-    }
+      if (error) throw error;
 
-    if (adResult.error) {
-      list.textContent =
-        "Gagal memuat status lowongan: " + adResult.error.message;
-      return;
-    }
+      list.replaceChildren();
 
-    const machines = machineResult.data || [];
-    const ads = adResult.data || [];
-    const adMap = new Map(ads.map(ad => [ad.machine_id, ad]));
+      if (!machines || machines.length === 0) {
+        list.textContent = "Belum ada mesin terdaftar.";
+        return;
+      }
 
-    list.replaceChildren();
+      let ads = [];
 
-    if (!machines.length) {
-      list.innerHTML =
-        '<p class="profile-empty">Belum ada mesin terdaftar.</p>';
-      return;
-    }
+      const adResult = await db
+        .from("machine_job_ads")
+        .select("*")
+        .eq("owner_id", targetUserId);
 
-    machines.forEach(machine => {
-      const card = document.createElement("article");
-      card.className = "profile-card";
+      if (adResult.error) {
+        console.warn("Gagal memuat status lowongan:", adResult.error);
+      } else {
+        ads = adResult.data || [];
+      }
 
-      addText(card, "h3", machine.machine_name || "Mesin");
+      const adMap = new Map(ads.map(ad => [ad.machine_id, ad]));
 
-      const meta = document.createElement("div");
-      meta.className = "profile-meta";
+      machines.forEach(machine => {
+        const card = document.createElement("article");
+        card.className = "profile-card";
 
-      [
-        machine.category,
-        `Jumlah: ${machine.quantity ?? 1}`,
-        machine.machine_condition
-      ].filter(Boolean).forEach(value => {
-        addText(meta, "span", value, "profile-machine-tag");
-      });
+        addText(card, "h3", machine.machine_name || "Mesin");
 
-      addText(
-        card,
-        "p",
-        `${machine.brand || "-"} · ${machine.model || "-"}`
-      );
+        addText(
+          card,
+          "p",
+          `${machine.brand || "-"} · ${machine.model || "-"}`
+        );
 
-      card.appendChild(meta);
+        const meta = document.createElement("div");
+        meta.className = "profile-meta";
 
-      if (machine.notes) addText(card, "p", machine.notes);
-
-      const operators = Array.isArray(machine.operator_names)
-        ? machine.operator_names.filter(name => String(name).trim())
-        : [];
-
-      const operatorSection = document.createElement("section");
-      operatorSection.style.marginTop = "14px";
-
-      addText(operatorSection, "strong", "Operator / Pekerja");
-
-      if (operators.length) {
-        const operatorList = document.createElement("div");
-        operatorList.className = "profile-meta";
-        operatorList.style.marginTop = "8px";
-
-        operators.forEach(name => {
-          addText(operatorList, "span", name, "profile-machine-tag");
+        [
+          machine.category,
+          `Jumlah: ${machine.quantity ?? 1}`,
+          machine.machine_condition
+        ].filter(Boolean).forEach(value => {
+          addText(meta, "span", value, "profile-machine-tag");
         });
 
-        operatorSection.appendChild(operatorList);
-      } else {
-        addText(operatorSection, "p", "Belum ada operator terdaftar.");
-      }
+        card.appendChild(meta);
 
-      card.appendChild(operatorSection);
+        if (machine.notes) {
+          addText(card, "p", machine.notes);
+        }
 
-      const ad = adMap.get(machine.id);
+        const operators = Array.isArray(machine.operator_names)
+          ? machine.operator_names.filter(name => String(name).trim())
+          : [];
 
-      if (!operators.length) {
-        const statusSection = document.createElement("section");
-        statusSection.style.marginTop = "14px";
+        const operatorSection = document.createElement("section");
+        operatorSection.style.marginTop = "14px";
 
-        const status = document.createElement("div");
-        status.className = "profile-meta";
+        addText(operatorSection, "strong", "Operator / Pekerja");
 
-        if (!ad) {
-          addText(status, "span", "Belum membuka lamaran");
+        if (operators.length) {
+          const operatorList = document.createElement("div");
+          operatorList.className = "profile-meta";
+          operatorList.style.marginTop = "8px";
+
+          operators.forEach(name => {
+            addText(operatorList, "span", name, "profile-machine-tag");
+          });
+
+          operatorSection.appendChild(operatorList);
         } else {
-          const expired =
-            new Date(ad.expires_at).getTime() <= Date.now();
+          addText(operatorSection, "p", "Belum ada operator terdaftar.");
+        }
 
-          if (ad.status === "published" && !expired) {
-            addText(status, "span", "Sedang membuka lamaran");
+        card.appendChild(operatorSection);
 
-            addText(
-              statusSection,
-              "p",
-              `Lowongan berlaku sampai ${new Date(ad.expires_at).toLocaleString("id-ID")}`
-            );
+        if (!operators.length) {
+          const statusSection = document.createElement("section");
+          statusSection.style.marginTop = "14px";
+
+          const status = document.createElement("div");
+          status.className = "profile-meta";
+
+          const ad = adMap.get(machine.id);
+
+          if (!ad) {
+            addText(status, "span", "Belum membuka lamaran");
           } else {
-            addText(status, "span", "Lowongan kedaluwarsa");
+            const expired =
+              new Date(ad.expires_at).getTime() <= Date.now();
+
+            if (ad.status === "published" && !expired) {
+              addText(status, "span", "Sedang membuka lamaran");
+
+              addText(
+                statusSection,
+                "p",
+                `Lowongan berlaku sampai ${new Date(ad.expires_at).toLocaleString("id-ID")}`
+              );
+            } else {
+              addText(status, "span", "Lowongan kedaluwarsa");
+            }
           }
+
+          statusSection.appendChild(status);
+
+          if (isOwnProfile) {
+            const manageLink = document.createElement("a");
+            manageLink.href = "inventaris-mesin.html";
+            manageLink.textContent = "Kelola di Inventaris";
+            manageLink.style.display = "inline-block";
+            manageLink.style.marginTop = "8px";
+            statusSection.appendChild(manageLink);
+          }
+
+          card.appendChild(statusSection);
         }
 
-        statusSection.appendChild(status);
+        list.appendChild(card);
+      });
 
-        if (isOwnProfile) {
-          const manageLink = document.createElement("a");
-          manageLink.href = "inventaris-mesin.html";
-          manageLink.textContent = "Kelola di Inventaris";
-          manageLink.style.display = "inline-block";
-          manageLink.style.marginTop = "8px";
-          statusSection.appendChild(manageLink);
-        }
-
-        card.appendChild(statusSection);
-      }
-
-      list.appendChild(card);
-    });
+    } catch (err) {
+      console.error("LOAD MACHINE ERROR:", err);
+      list.textContent =
+        "Gagal menampilkan mesin: " + (err.message || err);
+    }
   }
 
   async function loadScopes() {
