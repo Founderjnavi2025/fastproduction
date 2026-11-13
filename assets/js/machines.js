@@ -45,6 +45,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     select.appendChild(el);
   }
 
+  function categoryLabel(name) {
+    return {
+      "Lockstitch": "Jahit",
+      "Overlock / Safety Stitch": "Obras",
+      "Coverstitch / Interlock": "Kam / Coverstitch",
+      "Double Chainstitch": "Jahit Rantai",
+      "Buttonhole": "Lubang Kancing",
+      "Button Sewing": "Pasang Kancing",
+      "Bartack": "Bartack",
+      "Pattern Sewing": "Jahit Pola"
+    }[name] || name;
+  }
+
   function setPlaceholder(select, text) {
     select.replaceChildren();
     option(select, "", text);
@@ -118,7 +131,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     categories
       .filter(category => categoryIds.includes(String(category.id)))
       .forEach(category => {
-        option(fields.category, category.id, category.name);
+        option(fields.category, category.id, categoryLabel(category.name));
       });
 
     fields.category.disabled = !categoryIds.length;
@@ -253,7 +266,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       meta.className = "machine-meta";
 
       [
-        machine.category,
+        categoryLabel(machine.category),
         `Jumlah: ${machine.quantity}`,
         conditionLabel(machine.machine_condition)
       ].forEach(value => {
