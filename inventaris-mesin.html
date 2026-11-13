@@ -28,14 +28,14 @@
     }
     .machine-actions {
       display: flex;
+      flex-wrap: wrap;
       gap: 8px;
       margin-top: 14px;
     }
-    .machine-actions button {
-      flex: 1;
-    }
+    .machine-actions button { flex: 1; }
     .secondary { background: #354052; }
     .danger { background: #a83245; }
+    .success { background: #147d55; }
     .section-title { margin-top: 30px; }
     .empty {
       padding: 24px;
@@ -49,10 +49,18 @@
       font-size: 12px;
       margin: 6px 0 14px;
     }
-    select:disabled {
-      opacity: .5;
-      cursor: not-allowed;
+    .operator-list {
+      color: #cbd5e1;
+      font-size: 13px;
+      white-space: pre-line;
+      margin: 8px 0;
     }
+    .ad-status {
+      font-size: 12px;
+      margin-top: 10px;
+      color: #94a3b8;
+    }
+    select:disabled { opacity: .5; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -98,6 +106,13 @@
           <option value="perlu_perbaikan">Perlu Perbaikan</option>
           <option value="rusak">Rusak</option>
         </select>
+
+        <label>Nama Operator / Pekerja</label>
+        <textarea id="operatorNames" rows="3"
+          placeholder="Satu nama per baris. Kosongkan jika belum ada operator."></textarea>
+        <p class="catalog-info">
+          Jika belum ada operator, kamu bisa membuka lamaran dari kartu mesin.
+        </p>
 
         <label>Catatan</label>
         <textarea id="notes" rows="3"

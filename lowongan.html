@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lowongan Operator · FastProduction</title>
+  <link rel="stylesheet" href="assets/css/app.css">
+  <style>
+    .job-card {
+      padding: 18px;
+      margin: 14px 0;
+      border: 1px solid #354052;
+      border-radius: 14px;
+      background: #111722;
+    }
+    .job-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0;
+    }
+    .job-tag {
+      padding: 5px 9px;
+      border-radius: 7px;
+      background: #263344;
+      color: #cbd5e1;
+      font-size: 12px;
+    }
+    .job-empty {
+      padding: 28px;
+      border: 1px dashed #354052;
+      border-radius: 12px;
+      text-align: center;
+      color: #aab3c2;
+    }
+    .job-owner { color: #94a3b8; font-size: 13px; }
+    .job-expiry { color: #94a3b8; font-size: 12px; }
+    .job-card a { color: #7dd3fc; }
+  </style>
+</head>
+<body>
+  <main class="auth-container" style="width:min(700px,calc(100% - 24px))">
+    <a href="dashboard.html">← Dashboard</a>
+    <h1>Lowongan Operator</h1>
+    <p>Mesin yang sedang mencari operator di FastProduction.</p>
+    <p id="jobMessage">Memuat lowongan...</p>
+    <div id="jobList"></div>
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/logout.js"></script>
+  <script src="assets/js/lowongan.js"></script>
+</body>
+</html>

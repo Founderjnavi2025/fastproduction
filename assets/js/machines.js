@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     model: $("model"),
     quantity: $("quantity"),
     machine_condition: $("machineCondition"),
+    operator_names: $("operatorNames"),
     notes: $("notes")
   };
 
@@ -69,6 +70,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       perlu_perbaikan: "Perlu Perbaikan",
       rusak: "Rusak"
     }[value] || value;
+  }
+
+  function parseOperators(value) {
+    return String(value || "")
+      .split("\n")
+      .map(name => name.trim())
+      .filter(Boolean);
   }
 
   async function loadCatalog() {
@@ -230,19 +238,89 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("cancelEdit").hidden = true;
   }
 
+  function addText(parent, tag, text, className = "") {
+    const el = document.createElement(tag);
+    el.textContent = text;
+    if (className) el.className = className;
+    parent.appendChild(el);
+    return el;
+  }
+
+  async function publishJobAd(machine, existingAd, button) {
+    if (parseOperators((machine.operator_names || []).join("\n")).length) {
+      message.textContent = "Mesin sudah memiliki operator.";
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = "Menerbitkan...";
+
+    const now = new Date();
+    const expires = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+    const payload = {
+      machine_id: machine.id,
+      owner_id: user.id,
+      status: "published",
+      published_at: now.toISOString(),
+      expires_at: expires.toISOString(),
+      updated_at: now.toISOString()
+    };
+
+    try {
+      let result;
+
+      if (existingAd) {
+        result = await db.from("machine_job_ads")
+          .update(payload)
+          .eq("id", existingAd.id)
+          .eq("owner_id", user.id);
+      } else {
+        result = await db.from("machine_job_ads")
+          .insert(payload);
+      }
+
+      if (result.error) throw result.error;
+
+      message.textContent =
+        "Lowongan berhasil diterbitkan selama 24 jam.";
+
+      await loadMachines();
+    } catch (error) {
+      message.textContent = "Gagal menerbitkan lowongan: " + error.message;
+      button.disabled = false;
+      button.textContent = "Coba Lagi";
+    }
+  }
+
   async function loadMachines() {
     list.innerHTML = "<p>Memuat data mesin...</p>";
 
-    const { data, error } = await db
-      .from("user_machines")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
+    const [machineResult, adResult] = await Promise.all([
+      db.from("user_machines")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false }),
 
-    if (error) {
-      list.textContent = error.message;
+      db.from("machine_job_ads")
+        .select("*")
+        .eq("owner_id", user.id)
+    ]);
+
+    if (machineResult.error) {
+      list.textContent = machineResult.error.message;
       return;
     }
+
+    if (adResult.error) {
+      list.textContent = "Gagal memuat status lowongan: " + adResult.error.message;
+      return;
+    }
+
+    const data = machineResult.data || [];
+    const ads = adResult.data || [];
+
+    const adMap = new Map(ads.map(ad => [ad.machine_id, ad]));
 
     $("machineCount").textContent =
       `${data.length} jenis data mesin terdaftar`;
@@ -259,8 +337,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const card = document.createElement("article");
       card.className = "machine-card";
 
-      const title = document.createElement("h3");
-      title.textContent = machine.machine_name;
+      addText(card, "h3", machine.machine_name);
 
       const meta = document.createElement("div");
       meta.className = "machine-meta";
@@ -269,19 +346,36 @@ document.addEventListener("DOMContentLoaded", async () => {
         categoryLabel(machine.category),
         `Jumlah: ${machine.quantity}`,
         conditionLabel(machine.machine_condition)
-      ].forEach(value => {
-        const tag = document.createElement("span");
-        tag.className = "machine-tag";
-        tag.textContent = value;
-        meta.appendChild(tag);
-      });
+      ].forEach(value => addText(meta, "span", value, "machine-tag"));
 
-      const detail = document.createElement("p");
-      detail.textContent =
-        `Merek: ${machine.brand || "-"} · Model: ${machine.model || "-"}`;
+      card.appendChild(meta);
 
-      const notes = document.createElement("p");
-      notes.textContent = machine.notes || "Tidak ada catatan.";
+      addText(
+        card,
+        "p",
+        `Merek: ${machine.brand || "-"} · Model: ${machine.model || "-"}`
+      );
+
+      addText(
+        card,
+        "p",
+        machine.notes || "Tidak ada catatan."
+      );
+
+      const operators = Array.isArray(machine.operator_names)
+        ? machine.operator_names
+        : [];
+
+      addText(card, "strong", "Operator / Pekerja");
+
+      addText(
+        card,
+        "p",
+        operators.length
+          ? operators.join("\n")
+          : "Belum ada operator terdaftar.",
+        "operator-list"
+      );
 
       const actions = document.createElement("div");
       actions.className = "machine-actions";
@@ -297,7 +391,55 @@ document.addEventListener("DOMContentLoaded", async () => {
       deleteButton.addEventListener("click", () => deleteMachine(machine));
 
       actions.append(editButton, deleteButton);
-      card.append(title, meta, detail, notes, actions);
+      card.appendChild(actions);
+
+      if (!operators.length) {
+        const ad = adMap.get(machine.id);
+        const isActive = ad &&
+          ad.status === "published" &&
+          new Date(ad.expires_at).getTime() > Date.now();
+
+        const isExpired = ad &&
+          ad.status === "published" &&
+          new Date(ad.expires_at).getTime() <= Date.now();
+
+        const adButton = document.createElement("button");
+        adButton.className = "success";
+        adButton.style.width = "100%";
+        adButton.style.marginTop = "12px";
+
+        if (isActive) {
+          adButton.textContent = "Lamaran Aktif";
+          adButton.disabled = true;
+
+          addText(
+            card,
+            "p",
+            "Lowongan sedang tampil di halaman Lowongan Global.",
+            "ad-status"
+          );
+        } else {
+          adButton.textContent = isExpired
+            ? "Perbarui Lamaran"
+            : "Buat Lamaran";
+
+          adButton.addEventListener("click", () => {
+            publishJobAd(machine, ad, adButton);
+          });
+        }
+
+        card.appendChild(adButton);
+
+        if (isExpired) {
+          addText(
+            card,
+            "p",
+            "Iklan sudah kedaluwarsa. Perbarui jika masih mencari operator.",
+            "ad-status"
+          );
+        }
+      }
+
       list.appendChild(card);
     });
   }
@@ -335,6 +477,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     fields.quantity.value = machine.quantity;
     fields.machine_condition.value = machine.machine_condition;
+    fields.operator_names.value =
+      (machine.operator_names || []).join("\n");
     fields.notes.value = machine.notes || "";
 
     $("formTitle").textContent = "Edit Mesin";
@@ -394,6 +538,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       model: model.model_name,
       quantity: Number(fields.quantity.value),
       machine_condition: fields.machine_condition.value,
+      operator_names: parseOperators(fields.operator_names.value),
       notes: fields.notes.value.trim() || null
     };
 
