@@ -232,26 +232,25 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function loadScopes() {
     const list = document.getElementById("scopeList");
-    list.innerHTML =
-      '<p class="profile-empty">Memuat Scope...</p>';
+    list.textContent = "Memuat Scope...";
 
     const { data, error } = await db
       .from("scopes")
-      .select("id, title, description, target_qty, price_total, job_desks, deadline, status")
+      .select("*")
       .eq("creator_id", targetUserId)
       .order("created_at", { ascending: false });
 
+    console.log("SCOPE DEBUG:", { targetUserId, data, error });
+
     if (error) {
-      list.textContent =
-        "Gagal memuat Scope: " + error.message;
+      list.textContent = "Gagal memuat Scope: " + error.message;
       return;
     }
 
     list.replaceChildren();
 
     if (!data || !data.length) {
-      list.innerHTML =
-        '<p class="profile-empty">Belum ada Scope.</p>';
+      list.textContent = "Data Scope kosong.";
       return;
     }
 
@@ -261,54 +260,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       addText(card, "h3", scope.title || "Tanpa Judul");
       addText(card, "p", scope.description || "Tidak ada deskripsi.");
-
-      const price = addText(
-        card,
-        "p",
-        scope.price_total !== null
-          ? `Harga total: ${rupiah.format(scope.price_total)}`
-          : "Harga belum ditentukan"
-      );
-
-      price.style.color = "#c6ff69";
-      price.style.fontWeight = "800";
-
-      const meta = document.createElement("div");
-      meta.className = "profile-meta";
-
-      [
-        `Target: ${scope.target_qty ?? 0} pcs`,
-        `Status: ${scope.status || "open"}`,
-        scope.deadline
-          ? `Deadline: ${new Date(scope.deadline).toLocaleDateString("id-ID")}`
-          : "Tanpa deadline"
-      ].forEach(value => {
-        addText(meta, "span", value, "profile-machine-tag");
-      });
-
-      card.appendChild(meta);
-
-      const desks = Array.isArray(scope.job_desks)
-        ? scope.job_desks
-        : [];
-
-      if (desks.length) {
-        const deskSection = document.createElement("section");
-        deskSection.style.marginTop = "18px";
-
-        addText(deskSection, "strong", "Rangkaian Pekerjaan");
-
-        const deskList = document.createElement("div");
-        deskList.className = "profile-meta";
-        deskList.style.marginTop = "10px";
-
-        desks.forEach(desk => {
-          addText(deskList, "span", desk, "profile-machine-tag");
-        });
-
-        deskSection.appendChild(deskList);
-        card.appendChild(deskSection);
-      }
+      addText(card, "p", "Target: " + (scope.target_qty ?? 0) + " pcs");
+      addText(card, "p", "Status: " + (scope.status || "open"));
 
       list.appendChild(card);
     });
