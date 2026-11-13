@@ -9,8 +9,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const message = document.getElementById("message");
   const params = new URLSearchParams(location.search);
 
-  const { data: authData, error: authError } =
-    await db.auth.getUser();
+  const { data: authData, error: authError } = await db.auth.getUser();
 
   if (authError || !authData.user) {
     location.href = "login.html";
@@ -26,6 +25,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   editButton.addEventListener("click", () => {
     location.href = "edit-profile.html";
   });
+
+  /* ---------- TABS ---------- */
 
   const tabs = {
     machines: document.getElementById("machinesTab"),
@@ -43,8 +44,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function showTab(name) {
     Object.keys(tabs).forEach(key => {
-      tabs[key].classList.toggle("active", key === name);
-      panels[key].hidden = key !== name;
+      const active = key === name;
+      tabs[key].classList.toggle("active", active);
+      tabs[key].setAttribute("aria-selected", active ? "true" : "false");
+      panels[key].hidden = !active;
     });
   }
 
@@ -52,15 +55,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     tabs[name].addEventListener("click", () => showTab(name));
   });
 
-  const manageVideosLink =
-    document.getElementById("manageVideosLink");
+  document.getElementById("manageVideosLink").hidden = !isOwnProfile;
+  document.getElementById("manageDesignsLink").hidden = !isOwnProfile;
 
-  manageVideosLink.hidden = !isOwnProfile;
-
-  const manageDesignsLink =
-    document.getElementById("manageDesignsLink");
-
-  manageDesignsLink.hidden = !isOwnProfile;
+  /* ---------- PROFILE ---------- */
 
   const { data: profile, error: profileError } = await db
     .from("profiles")
@@ -69,22 +67,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     .maybeSingle();
 
   if (profileError || !profile) {
-    message.textContent =
-      profileError?.message || "Profil tidak ditemukan.";
+    message.textContent = profileError?.message || "Profil tidak ditemukan.";
     return;
   }
 
   document.getElementById("profileName").textContent =
     profile.full_name || "Pengguna FastProduction";
-
   document.getElementById("profileAvatar").textContent =
     (profile.full_name || "U").trim().charAt(0).toUpperCase();
-
   document.getElementById("profileBio").textContent =
     profile.bio || "Belum ada bio.";
-
   document.getElementById("profileAddress").textContent =
     profile.address || "";
+
+  /* ---------- HELPERS ---------- */
 
   const rupiah = new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -92,18 +88,56 @@ document.addEventListener("DOMContentLoaded", async () => {
     maximumFractionDigits: 0
   });
 
-  function addText(parent, tag, value, className = "") {
-    const element = document.createElement(tag);
-    element.textContent = value ?? "";
-    if (className) element.className = className;
-    return element;
+  function el(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text != null) node.textContent = text;
+    return node;
   }
+
+  function emptyState(text) {
+    return el("p", "profile-empty", text);
+  }
+
+  function tag(text, accent = false) {
+    return el("span", accent ? "tag accent" : "tag", text);
+  }
+
+  function getYouTubeId(value) {
+    try {
+      const url = new URL(value);
+      const host = url.hostname.toLowerCase();
+
+      if (host === "youtu.be") {
+        return url.pathname.split("/").filter(Boolean)[0];
+      }
+
+      if (!["youtube.com", "www.youtube.com", "m.youtube.com"].includes(host)) {
+        return null;
+      }
+
+      if (url.pathname === "/watch") {
+        return url.searchParams.get("v");
+      }
+
+      const parts = url.pathname.split("/").filter(Boolean);
+      if (["shorts", "live", "embed"].includes(parts[0])) {
+        return parts[1];
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  /* ---------- MACHINES ---------- */
 
   async function loadMachines() {
     const list = document.getElementById("machineList");
 
     try {
-      list.textContent = "Memuat mesin...";
+      list.replaceChildren(emptyState("Memuat mesin..."));
 
       const { data: machines, error } = await db
         .from("user_machines")
@@ -111,126 +145,83 @@ document.addEventListener("DOMContentLoaded", async () => {
         .eq("user_id", targetUserId)
         .order("created_at", { ascending: false });
 
-      console.log("MACHINE DEBUG:", { targetUserId, machines, error });
-
       if (error) throw error;
 
       list.replaceChildren();
 
       if (!machines || machines.length === 0) {
-        list.textContent = "Belum ada mesin terdaftar.";
+        list.appendChild(emptyState("Belum ada mesin terdaftar."));
         return;
       }
-
-      let ads = [];
 
       const adResult = await db
         .from("machine_job_ads")
         .select("*")
         .eq("owner_id", targetUserId);
 
-      if (adResult.error) {
-        console.warn("Gagal memuat status lowongan:", adResult.error);
-      } else {
-        ads = adResult.data || [];
-      }
-
+      const ads = adResult.error ? [] : (adResult.data || []);
       const adMap = new Map(ads.map(ad => [ad.machine_id, ad]));
 
       machines.forEach(machine => {
-        const card = document.createElement("article");
-        card.className = "profile-card";
+        const card = el("article", "profile-card");
 
-        addText(card, "h3", machine.machine_name || "Mesin");
-
-        addText(
-          card,
+        card.appendChild(el("strong", "", machine.machine_name || "Mesin"));
+        card.appendChild(el(
           "p",
-          `${machine.brand || "-"} · ${machine.model || "-"}`
-        );
+          "",
+          [machine.brand, machine.model].filter(Boolean).join(" · ") || "—"
+        ));
 
-        const meta = document.createElement("div");
-        meta.className = "profile-meta";
-
-        [
-          machine.category,
-          `Jumlah: ${machine.quantity ?? 1}`,
-          machine.machine_condition
-        ].filter(Boolean).forEach(value => {
-          addText(meta, "span", value, "profile-machine-tag");
-        });
-
+        const meta = el("div", "meta");
+        if (machine.category) meta.appendChild(tag(machine.category));
+        meta.appendChild(tag(`Jumlah: ${machine.quantity ?? 1}`));
+        if (machine.machine_condition) {
+          meta.appendChild(tag(machine.machine_condition, true));
+        }
         card.appendChild(meta);
 
         if (machine.notes) {
-          addText(card, "p", machine.notes);
+          card.appendChild(el("p", "", machine.notes));
         }
 
         const operators = Array.isArray(machine.operator_names)
           ? machine.operator_names.filter(name => String(name).trim())
           : [];
 
-        const operatorSection = document.createElement("section");
-        operatorSection.style.marginTop = "14px";
-
-        addText(operatorSection, "strong", "Operator / Pekerja");
-
         if (operators.length) {
-          const operatorList = document.createElement("div");
-          operatorList.className = "profile-meta";
-          operatorList.style.marginTop = "8px";
-
-          operators.forEach(name => {
-            addText(operatorList, "span", name, "profile-machine-tag");
-          });
-
-          operatorSection.appendChild(operatorList);
+          const opMeta = el("div", "meta");
+          operators.forEach(name => opMeta.appendChild(tag(name)));
+          card.appendChild(opMeta);
         } else {
-          addText(operatorSection, "p", "Belum ada operator terdaftar.");
-        }
-
-        card.appendChild(operatorSection);
-
-        if (!operators.length) {
-          const statusSection = document.createElement("section");
-          statusSection.style.marginTop = "14px";
-
-          const status = document.createElement("div");
-          status.className = "profile-meta";
-
           const ad = adMap.get(machine.id);
+          let statusText = "Belum membuka lamaran";
+          let accent = false;
 
-          if (!ad) {
-            addText(status, "span", "Belum membuka lamaran");
-          } else {
-            const expired =
-              new Date(ad.expires_at).getTime() <= Date.now();
-
+          if (ad) {
+            const expired = new Date(ad.expires_at).getTime() <= Date.now();
             if (ad.status === "published" && !expired) {
-              addText(status, "span", "Sedang membuka lamaran");
-
-              addText(
-                statusSection,
-                "p",
-                `Lowongan berlaku sampai ${new Date(ad.expires_at).toLocaleString("id-ID")}`
-              );
+              statusText = "Sedang membuka lamaran";
+              accent = true;
             } else {
-              addText(status, "span", "Lowongan kedaluwarsa");
+              statusText = "Lowongan kedaluwarsa";
             }
           }
 
-          statusSection.appendChild(status);
+          const statusMeta = el("div", "meta");
+          statusMeta.appendChild(tag(statusText, accent));
+          card.appendChild(statusMeta);
 
           if (isOwnProfile) {
-            const manageLink = document.createElement("a");
-            manageLink.href = "inventaris-mesin.html";
-            manageLink.textContent = "Kelola di Inventaris";
-            manageLink.style.display = "inline-block";
-            manageLink.style.marginTop = "8px";
-            statusSection.appendChild(manageLink);
+            const link = el("a", "", "Kelola di Inventaris →");
+            link.href = "inventaris-mesin.html";
+            link.style.display = "inline-block";
+            link.style.marginTop = "10px";
+            link.style.color = "var(--accent)";
+            link.style.fontSize = "12px";
+            link.style.fontWeight = "600";
+            link.style.textDecoration = "none";
+            card.appendChild(link);
           }
-
-          card.appendChild(statusSection);
         }
 
         list.appendChild(card);
@@ -238,16 +229,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     } catch (err) {
       console.error("LOAD MACHINE ERROR:", err);
-      list.textContent =
-        "Gagal menampilkan mesin: " + (err.message || err);
+      list.replaceChildren(emptyState("Gagal menampilkan mesin: " + (err.message || err)));
     }
   }
+
+  /* ---------- SCOPES ---------- */
 
   async function loadScopes() {
     const list = document.getElementById("scopeList");
 
     try {
-      list.textContent = "Memuat Scope...";
+      list.replaceChildren(emptyState("Memuat Scope..."));
 
       const { data, error } = await db
         .from("scopes")
@@ -255,46 +247,30 @@ document.addEventListener("DOMContentLoaded", async () => {
         .eq("creator_id", targetUserId)
         .order("created_at", { ascending: false });
 
-      console.log("SCOPE DEBUG:", { targetUserId, data, error });
-
       if (error) throw error;
 
       list.replaceChildren();
 
       if (!data || data.length === 0) {
-        list.textContent = "Belum ada Scope.";
+        list.appendChild(emptyState("Belum ada Scope."));
         return;
       }
 
       data.forEach(scope => {
-        const card = document.createElement("article");
-        card.className = "profile-card";
+        const card = el("article", "profile-card");
 
-        const title = document.createElement("h3");
-        title.textContent = scope.title || "Tanpa Judul";
-        card.appendChild(title);
+        card.appendChild(el("strong", "", scope.title || "Tanpa Judul"));
+        card.appendChild(el("p", "", scope.description || "Tidak ada deskripsi."));
 
-        const description = document.createElement("p");
-        description.textContent = scope.description || "Tidak ada deskripsi.";
-        card.appendChild(description);
-
-        const details = [
-          "Target: " + (scope.target_qty ?? 0) + " pcs",
-          "Harga total: " + rupiah.format(scope.price_total ?? 0),
-          "Status: " + (scope.status || "open"),
-          "Deadline: " + (scope.deadline || "Tanpa deadline")
-        ];
-
-        details.forEach(value => {
-          const p = document.createElement("p");
-          p.textContent = value;
-          card.appendChild(p);
-        });
+        const meta = el("div", "meta");
+        meta.appendChild(tag(`${scope.target_qty ?? 0} pcs`));
+        meta.appendChild(tag(rupiah.format(scope.price_total ?? 0), true));
+        meta.appendChild(tag(scope.status || "open"));
+        if (scope.deadline) meta.appendChild(tag(scope.deadline));
+        card.appendChild(meta);
 
         if (Array.isArray(scope.job_desks) && scope.job_desks.length) {
-          const desks = document.createElement("p");
-          desks.textContent = "Pekerjaan: " + scope.job_desks.join(", ");
-          card.appendChild(desks);
+          card.appendChild(el("p", "", scope.job_desks.join(" · ")));
         }
 
         list.appendChild(card);
@@ -302,14 +278,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     } catch (err) {
       console.error("LOAD SCOPE ERROR:", err);
-      list.textContent = "Gagal menampilkan Scope: " + (err.message || err);
+      list.replaceChildren(emptyState("Gagal menampilkan Scope: " + (err.message || err)));
     }
   }
 
+  /* ---------- VIDEOS ---------- */
+
   async function loadVideos() {
     const list = document.getElementById("videoList");
-    list.innerHTML =
-      '<p class="profile-empty">Memuat video...</p>';
+
+    list.replaceChildren(emptyState("Memuat video..."));
 
     const { data, error } = await db
       .from("user_videos")
@@ -318,75 +296,60 @@ document.addEventListener("DOMContentLoaded", async () => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      list.textContent =
-        "Gagal memuat video: " + error.message;
+      list.replaceChildren(emptyState("Gagal memuat video: " + error.message));
       return;
     }
 
     list.replaceChildren();
 
     if (!data || !data.length) {
-      list.innerHTML =
-        '<p class="profile-empty">Belum ada video Production.</p>';
+      list.appendChild(emptyState("Belum ada video Production."));
       return;
     }
 
-    const grid = document.createElement("div");
-    grid.style.display = "grid";
-    grid.style.gridTemplateColumns =
-      "repeat(auto-fit, minmax(min(100%, 240px), 1fr))";
-    grid.style.gap = "16px";
-
     data.forEach(video => {
-      const card = document.createElement("article");
-      card.className = "profile-card";
-
-      const link = document.createElement("a");
-      link.href = video.youtube_url;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      link.style.display = "block";
-
-      const thumbnail = document.createElement("img");
+      const card = el("article", "profile-card");
       const videoId = getYouTubeId(video.youtube_url);
 
-      thumbnail.src =
-        `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-      thumbnail.alt = video.title;
-      thumbnail.loading = "lazy";
-      thumbnail.style.width = "100%";
-      thumbnail.style.aspectRatio = "16 / 9";
-      thumbnail.style.objectFit = "cover";
-      thumbnail.style.borderRadius = "10px";
-
-      link.appendChild(thumbnail);
-      card.appendChild(link);
-
-      addText(card, "h3", video.title);
-
-      if (video.description) {
-        addText(card, "p", video.description);
+      if (videoId) {
+        const thumb = el("div", "video-thumb");
+        const img = document.createElement("img");
+        img.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+        img.alt = video.title || "Video";
+        img.loading = "lazy";
+        thumb.appendChild(img);
+        card.appendChild(thumb);
       }
 
-      const watch = document.createElement("a");
+      card.appendChild(el("strong", "", video.title || "Tanpa Judul"));
+
+      if (video.description) {
+        card.appendChild(el("p", "", video.description));
+      }
+
+      const watch = el("a", "", "Tonton di YouTube →");
       watch.href = video.youtube_url;
       watch.target = "_blank";
       watch.rel = "noopener noreferrer";
-      watch.textContent = "Tonton di YouTube ↗";
+      watch.style.display = "inline-block";
+      watch.style.marginTop = "10px";
+      watch.style.color = "var(--accent)";
+      watch.style.fontSize = "12px";
+      watch.style.fontWeight = "600";
+      watch.style.textDecoration = "none";
       card.appendChild(watch);
 
-      grid.appendChild(card);
+      list.appendChild(card);
     });
-
-    list.appendChild(grid);
   }
 
+  /* ---------- DESIGNS ---------- */
 
   async function loadDesigns() {
     const list = document.getElementById("designList");
 
     try {
-      list.textContent = "Memuat desain...";
+      list.replaceChildren(emptyState("Memuat desain..."));
 
       const { data, error } = await db
         .from("user_designs")
@@ -399,84 +362,43 @@ document.addEventListener("DOMContentLoaded", async () => {
       list.replaceChildren();
 
       if (!data || data.length === 0) {
-        list.textContent = "Belum ada desain.";
+        list.appendChild(emptyState("Belum ada desain."));
         return;
       }
 
-      const grid = document.createElement("div");
-      grid.style.display = "grid";
-      grid.style.gridTemplateColumns =
-        "repeat(auto-fit, minmax(min(100%, 240px), 1fr))";
-      grid.style.gap = "16px";
-
       data.forEach(design => {
-        const card = document.createElement("article");
-        card.className = "profile-card";
+        const card = el("article", "profile-card");
 
         if (design.image_url) {
-          const image = document.createElement("img");
-          image.src = design.image_url;
-          image.alt = design.title || "Design";
-          image.loading = "lazy";
-          image.style.width = "100%";
-          image.style.aspectRatio = "4 / 5";
-          image.style.objectFit = "cover";
-          image.style.borderRadius = "10px";
-          image.style.marginBottom = "12px";
-          image.onerror = () => image.remove();
-          card.appendChild(image);
+          const thumb = el("div", "design-thumb");
+          const img = document.createElement("img");
+          img.src = design.image_url;
+          img.alt = design.title || "Design";
+          img.loading = "lazy";
+          img.onerror = () => thumb.remove();
+          thumb.appendChild(img);
+          card.appendChild(thumb);
         }
 
-        addText(card, "h3", design.title || "Tanpa Judul");
+        card.appendChild(el("strong", "", design.title || "Tanpa Judul"));
+
         if (design.description) {
-          addText(card, "p", design.description);
+          card.appendChild(el("p", "", design.description));
         }
 
-        const price = addText(card, "span", "Edit Harga · Segera");
-        price.className = "profile-machine-tag";
-        price.style.display = "inline-block";
-        price.style.marginTop = "10px";
+        const meta = el("div", "meta");
+        meta.appendChild(tag("Harga · Segera"));
+        card.appendChild(meta);
 
-        grid.appendChild(card);
+        list.appendChild(card);
       });
-
-      list.appendChild(grid);
     } catch (err) {
       console.error("LOAD DESIGNS ERROR:", err);
-      list.textContent = "Gagal memuat desain: " + err.message;
+      list.replaceChildren(emptyState("Gagal memuat desain: " + err.message));
     }
   }
 
-  function getYouTubeId(value) {
-    try {
-      const url = new URL(value);
-      const host = url.hostname.toLowerCase();
-
-      if (host === "youtu.be") {
-        return url.pathname.split("/").filter(Boolean)[0];
-      }
-
-      if (![
-        "youtube.com",
-        "www.youtube.com",
-        "m.youtube.com"
-      ].includes(host)) return null;
-
-      if (url.pathname === "/watch") {
-        return url.searchParams.get("v");
-      }
-
-      const parts = url.pathname.split("/").filter(Boolean);
-
-      if (["shorts", "live", "embed"].includes(parts[0])) {
-        return parts[1];
-      }
-
-      return null;
-    } catch {
-      return null;
-    }
-  }
+  /* ---------- RUN ---------- */
 
   await Promise.all([
     loadMachines(),
