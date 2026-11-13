@@ -157,6 +157,136 @@
     await renderRoom();
   }
 
+
+  async function handleDealAction(event) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const button = form.querySelector("button");
+    const action = form.dataset.action;
+    const formData = new FormData(form);
+    const updates = {};
+
+    if (action === "propose-survey") {
+      const date = formData.get("survey_at");
+
+      if (!date) {
+        alert("Jadwal survey wajib diisi.");
+        return;
+      }
+
+      const parsed = new Date(date);
+      if (Number.isNaN(parsed.getTime()) || parsed <= new Date()) {
+        alert("Pilih jadwal survey yang valid dan belum berlalu.");
+        return;
+      }
+
+      updates.status = "survey_proposed";
+      updates.survey_at = parsed.toISOString();
+
+    } else if (action === "accept-survey") {
+      updates.status = "scheduled";
+
+    } else if (action === "confirm-survey") {
+      updates.status = "surveyed";
+
+    } else if (action === "pickup-proof") {
+      const url = String(formData.get("pickup_proof_url") || "").trim();
+
+      if (!/^https?:\/\/\S+$/i.test(url)) {
+        alert("Masukkan URL bukti yang valid.");
+        return;
+      }
+
+      updates.status = "monitoring";
+      updates.pickup_proof_url = url;
+
+    } else {
+      return;
+    }
+
+    if (!confirm("Lanjutkan tindakan ini?")) return;
+
+    button.disabled = true;
+
+    try {
+      const { error } = await db
+        .from("deals")
+        .update(updates)
+        .eq("id", dealId);
+
+      if (error) throw error;
+
+      await loadDeal();
+      await renderRoom();
+
+    } catch (error) {
+      console.error("Deal action error:", error);
+      alert("Tindakan gagal: " + error.message);
+      button.disabled = false;
+    }
+  }
+
+  function renderDealAction(deal, isOwner, isWorker) {
+    let content = "";
+
+    if (deal.status === "discussion" && isOwner) {
+      content = `
+        <p>Ajukan tanggal dan waktu untuk survey bahan atau lokasi produksi.</p>
+        <form class="room-form" data-action="propose-survey">
+          <label>Jadwal survey</label>
+          <input type="datetime-local" name="survey_at" required>
+          <button class="room-button" type="submit">Ajukan Jadwal Survey</button>
+        </form>
+      `;
+
+    } else if (deal.status === "survey_proposed" && isWorker) {
+      content = `
+        <p>Pemilik Scope telah mengusulkan jadwal:</p>
+        <p><strong>${esc(dateText(deal.survey_at))}</strong></p>
+        <form class="room-form" data-action="accept-survey">
+          <button class="room-button" type="submit">Setujui Jadwal Survey</button>
+        </form>
+      `;
+
+    } else if (deal.status === "scheduled" && isWorker) {
+      content = `
+        <p>Konfirmasikan jika survey sudah selesai dilaksanakan.</p>
+        <form class="room-form" data-action="confirm-survey">
+          <button class="room-button" type="submit">Konfirmasi Survey Selesai</button>
+        </form>
+      `;
+
+    } else if (deal.status === "surveyed" && isOwner) {
+      content = `
+        <p>Masukkan tautan bukti pengambilan bahan atau surat jalan.</p>
+        <form class="room-form" data-action="pickup-proof">
+          <input type="url" name="pickup_proof_url" required
+            placeholder="https://...">
+          <button class="room-button" type="submit">Konfirmasi Pengambilan Bahan</button>
+        </form>
+      `;
+
+    } else if (deal.status === "monitoring") {
+      content = `
+        <div class="room-empty">
+          Produksi sedang berjalan. ${isWorker ? "Kamu bertugas melaksanakan produksi." : "Kamu dapat memantau proses produksi."}
+        </div>
+      `;
+
+    } else {
+      content = `
+        <div class="room-empty">
+          ${deal.status === "closed"
+            ? "Deal sudah ditutup."
+            : "Menunggu tindakan dari peserta lainnya."}
+        </div>
+      `;
+    }
+
+    return content;
+  }
+
   async function renderRoom() {
     const deal = currentDeal;
     const isOwner = deal.owner_id === currentUser.id;
@@ -221,13 +351,17 @@
           ${isOwner ? "Kamu adalah pemilik Scope." : isWorker ? "Kamu adalah pelaksana pekerjaan." : "Akun ini bukan peserta Deal."}
           <br>Status saat ini: ${esc(statusNames[deal.status] || deal.status)}
         </div>
-        <div class="room-empty" style="margin-top:12px">
-          Panel tindakan proses produksi akan diaktifkan pada tahap berikutnya.
+        <div style="margin-top:12px">
+          ${renderDealAction(deal, isOwner, isWorker)}
         </div>
       </section>
     `;
 
     document.getElementById("messageForm").addEventListener("submit", sendMessage);
+
+    root.querySelectorAll("form[data-action]").forEach(form => {
+      form.addEventListener("submit", handleDealAction);
+    });
   }
 
   async function init() {
