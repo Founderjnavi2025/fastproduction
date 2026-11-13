@@ -23,29 +23,37 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const editButton = document.getElementById("editProfileButton");
   editButton.hidden = !isOwnProfile;
-
   editButton.addEventListener("click", () => {
     location.href = "edit-profile.html";
   });
 
-  const machinesTab = document.getElementById("machinesTab");
-  const scopesTab = document.getElementById("scopesTab");
-  const machinesPanel = document.getElementById("machinesPanel");
-  const scopesPanel = document.getElementById("scopesPanel");
+  const tabs = {
+    machines: document.getElementById("machinesTab"),
+    scopes: document.getElementById("scopesTab"),
+    videos: document.getElementById("videosTab")
+  };
 
-  machinesTab.addEventListener("click", () => {
-    machinesTab.classList.add("active");
-    scopesTab.classList.remove("active");
-    machinesPanel.hidden = false;
-    scopesPanel.hidden = true;
+  const panels = {
+    machines: document.getElementById("machinesPanel"),
+    scopes: document.getElementById("scopesPanel"),
+    videos: document.getElementById("videosPanel")
+  };
+
+  function showTab(name) {
+    Object.keys(tabs).forEach(key => {
+      tabs[key].classList.toggle("active", key === name);
+      panels[key].hidden = key !== name;
+    });
+  }
+
+  Object.keys(tabs).forEach(name => {
+    tabs[name].addEventListener("click", () => showTab(name));
   });
 
-  scopesTab.addEventListener("click", () => {
-    scopesTab.classList.add("active");
-    machinesTab.classList.remove("active");
-    scopesPanel.hidden = false;
-    machinesPanel.hidden = true;
-  });
+  const manageVideosLink =
+    document.getElementById("manageVideosLink");
+
+  manageVideosLink.hidden = !isOwnProfile;
 
   const { data: profile, error: profileError } = await db
     .from("profiles")
@@ -79,7 +87,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function addText(parent, tag, value, className = "") {
     const element = document.createElement(tag);
-    element.textContent = value;
+    element.textContent = value ?? "";
     if (className) element.className = className;
     return element;
   }
@@ -114,10 +122,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const machines = machineResult.data || [];
     const ads = adResult.data || [];
-
-    const adMap = new Map(
-      ads.map(ad => [ad.machine_id, ad])
-    );
+    const adMap = new Map(ads.map(ad => [ad.machine_id, ad]));
 
     list.replaceChildren();
 
@@ -131,11 +136,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const card = document.createElement("article");
       card.className = "profile-card";
 
-      addText(
-        card,
-        "h3",
-        machine.machine_name || "Mesin"
-      );
+      addText(card, "h3", machine.machine_name || "Mesin");
 
       const meta = document.createElement("div");
       meta.className = "profile-meta";
@@ -145,21 +146,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         `Jumlah: ${machine.quantity ?? 1}`,
         machine.machine_condition
       ].filter(Boolean).forEach(value => {
-        const tag = addText(meta, "span", value);
-        tag.className = "profile-machine-tag";
+        addText(meta, "span", value, "profile-machine-tag");
       });
 
-      const detail = addText(
+      addText(
         card,
         "p",
         `${machine.brand || "-"} · ${machine.model || "-"}`
       );
 
-      card.append(meta, detail);
+      card.appendChild(meta);
 
-      if (machine.notes) {
-        addText(card, "p", machine.notes);
-      }
+      if (machine.notes) addText(card, "p", machine.notes);
 
       const operators = Array.isArray(machine.operator_names)
         ? machine.operator_names.filter(name => String(name).trim())
@@ -168,11 +166,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const operatorSection = document.createElement("section");
       operatorSection.style.marginTop = "14px";
 
-      addText(
-        operatorSection,
-        "strong",
-        "Operator / Pekerja"
-      );
+      addText(operatorSection, "strong", "Operator / Pekerja");
 
       if (operators.length) {
         const operatorList = document.createElement("div");
@@ -180,17 +174,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         operatorList.style.marginTop = "8px";
 
         operators.forEach(name => {
-          const tag = addText(operatorList, "span", name);
-          tag.className = "profile-machine-tag";
+          addText(operatorList, "span", name, "profile-machine-tag");
         });
 
         operatorSection.appendChild(operatorList);
       } else {
-        addText(
-          operatorSection,
-          "p",
-          "Belum ada operator terdaftar."
-        );
+        addText(operatorSection, "p", "Belum ada operator terdaftar.");
       }
 
       card.appendChild(operatorSection);
@@ -213,11 +202,10 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (ad.status === "published" && !expired) {
             addText(status, "span", "Sedang membuka lamaran");
 
-            const expiry = new Date(ad.expires_at);
             addText(
               statusSection,
               "p",
-              `Lowongan berlaku sampai ${expiry.toLocaleString("id-ID")}`
+              `Lowongan berlaku sampai ${new Date(ad.expires_at).toLocaleString("id-ID")}`
             );
           } else {
             addText(status, "span", "Lowongan kedaluwarsa");
@@ -229,12 +217,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (isOwnProfile) {
           const manageLink = document.createElement("a");
           manageLink.href = "inventaris-mesin.html";
-          manageLink.textContent = ad &&
-            ad.status === "published" &&
-            new Date(ad.expires_at).getTime() <= Date.now()
-              ? "Perbarui di Inventaris"
-              : "Kelola di Inventaris";
-
+          manageLink.textContent = "Kelola di Inventaris";
           manageLink.style.display = "inline-block";
           manageLink.style.marginTop = "8px";
           statusSection.appendChild(manageLink);
@@ -261,13 +244,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (error) {
       list.textContent =
         "Gagal memuat Scope: " + error.message;
-      console.error("Load scopes:", error);
       return;
     }
 
     list.replaceChildren();
 
-    if (!data.length) {
+    if (!data || !data.length) {
       list.innerHTML =
         '<p class="profile-empty">Belum ada Scope.</p>';
       return;
@@ -278,12 +260,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       card.className = "profile-card";
 
       addText(card, "h3", scope.title || "Tanpa Judul");
-
-      addText(
-        card,
-        "p",
-        scope.description || "Tidak ada deskripsi."
-      );
+      addText(card, "p", scope.description || "Tidak ada deskripsi.");
 
       const price = addText(
         card,
@@ -306,11 +283,10 @@ document.addEventListener("DOMContentLoaded", async () => {
           ? `Deadline: ${new Date(scope.deadline).toLocaleDateString("id-ID")}`
           : "Tanpa deadline"
       ].forEach(value => {
-        const tag = addText(meta, "span", value);
-        tag.className = "profile-machine-tag";
+        addText(meta, "span", value, "profile-machine-tag");
       });
 
-      card.append(meta);
+      card.appendChild(meta);
 
       const desks = Array.isArray(scope.job_desks)
         ? scope.job_desks
@@ -327,8 +303,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         deskList.style.marginTop = "10px";
 
         desks.forEach(desk => {
-          const tag = addText(deskList, "span", desk);
-          tag.className = "profile-machine-tag";
+          addText(deskList, "span", desk, "profile-machine-tag");
         });
 
         deskSection.appendChild(deskList);
@@ -339,8 +314,115 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  async function loadVideos() {
+    const list = document.getElementById("videoList");
+    list.innerHTML =
+      '<p class="profile-empty">Memuat video...</p>';
+
+    const { data, error } = await db
+      .from("user_videos")
+      .select("id, title, description, youtube_url, created_at")
+      .eq("user_id", targetUserId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      list.textContent =
+        "Gagal memuat video: " + error.message;
+      return;
+    }
+
+    list.replaceChildren();
+
+    if (!data || !data.length) {
+      list.innerHTML =
+        '<p class="profile-empty">Belum ada video Production.</p>';
+      return;
+    }
+
+    const grid = document.createElement("div");
+    grid.style.display = "grid";
+    grid.style.gridTemplateColumns =
+      "repeat(auto-fit, minmax(min(100%, 240px), 1fr))";
+    grid.style.gap = "16px";
+
+    data.forEach(video => {
+      const card = document.createElement("article");
+      card.className = "profile-card";
+
+      const link = document.createElement("a");
+      link.href = video.youtube_url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.style.display = "block";
+
+      const thumbnail = document.createElement("img");
+      const videoId = getYouTubeId(video.youtube_url);
+
+      thumbnail.src =
+        `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+      thumbnail.alt = video.title;
+      thumbnail.loading = "lazy";
+      thumbnail.style.width = "100%";
+      thumbnail.style.aspectRatio = "16 / 9";
+      thumbnail.style.objectFit = "cover";
+      thumbnail.style.borderRadius = "10px";
+
+      link.appendChild(thumbnail);
+      card.appendChild(link);
+
+      addText(card, "h3", video.title);
+
+      if (video.description) {
+        addText(card, "p", video.description);
+      }
+
+      const watch = document.createElement("a");
+      watch.href = video.youtube_url;
+      watch.target = "_blank";
+      watch.rel = "noopener noreferrer";
+      watch.textContent = "Tonton di YouTube ↗";
+      card.appendChild(watch);
+
+      grid.appendChild(card);
+    });
+
+    list.appendChild(grid);
+  }
+
+  function getYouTubeId(value) {
+    try {
+      const url = new URL(value);
+      const host = url.hostname.toLowerCase();
+
+      if (host === "youtu.be") {
+        return url.pathname.split("/").filter(Boolean)[0];
+      }
+
+      if (![
+        "youtube.com",
+        "www.youtube.com",
+        "m.youtube.com"
+      ].includes(host)) return null;
+
+      if (url.pathname === "/watch") {
+        return url.searchParams.get("v");
+      }
+
+      const parts = url.pathname.split("/").filter(Boolean);
+
+      if (["shorts", "live", "embed"].includes(parts[0])) {
+        return parts[1];
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
   await Promise.all([
     loadMachines(),
-    loadScopes()
+    loadScopes(),
+    loadVideos()
   ]);
 });

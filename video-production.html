@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Video Production · FastProduction</title>
+  <link rel="stylesheet" href="assets/css/app.css">
+  <style>
+    .video-manager {
+      width: min(900px, 94%);
+      margin: 30px auto;
+    }
+    .video-form {
+      display: grid;
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .video-form input,
+    .video-form textarea {
+      width: 100%;
+      padding: 12px;
+      box-sizing: border-box;
+    }
+    .video-item {
+      display: grid;
+      grid-template-columns: minmax(120px, 220px) 1fr;
+      gap: 16px;
+      padding: 16px;
+      margin: 14px 0;
+      border: 1px solid #444;
+      border-radius: 12px;
+    }
+    .video-item img {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    .video-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .video-actions button {
+      padding: 8px 14px;
+    }
+    @media(max-width:550px) {
+      .video-item { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="video-manager">
+    <h1>Your Video Production</h1>
+    <p>Kelola video workshop milik akunmu.</p>
+
+    <form id="videoForm" class="video-form">
+      <input id="videoTitle" type="text"
+        placeholder="Judul video" maxlength="120" required>
+
+      <textarea id="videoDescription"
+        placeholder="Deskripsi video (opsional)"
+        rows="3" maxlength="1000"></textarea>
+
+      <input id="youtubeUrl" type="url"
+        placeholder="Tempel link YouTube di sini" required>
+
+      <button id="saveVideoButton" type="submit">
+        Tambahkan Video
+      </button>
+
+      <button id="cancelEditButton" type="button" hidden>
+        Batal Edit
+      </button>
+    </form>
+
+    <p id="videoMessage" role="status"></p>
+
+    <h2>Video Saya</h2>
+    <div id="myVideoList">
+      <p>Memuat video...</p>
+    </div>
+
+    <a href="profile.html">← Kembali ke Profil</a>
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/logout.js"></script>
+  <script src="assets/js/video-production.js"></script>
+</body>
+</html>
