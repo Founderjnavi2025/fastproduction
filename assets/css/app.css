@@ -803,3 +803,52 @@ form {
     justify-content: flex-end;
   }
 }
+
+
+/* DESIGN MANAGEMENT */
+#designForm {
+  display: grid;
+  gap: 12px;
+}
+
+#designForm input,
+#designForm textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #111510;
+  color: var(--white);
+  font: inherit;
+}
+
+#designForm label {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+#designForm input:focus,
+#designForm textarea:focus {
+  outline: 1px solid var(--lime);
+  border-color: var(--lime);
+}
+
+#designsPanel .section-heading,
+.profile-section .section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+#designsPanel .section-heading a {
+  color: var(--lime);
+}
+
+#designsTab {
+  flex: 1 1 0;
+  min-width: 0;
+  white-space: nowrap;
+}

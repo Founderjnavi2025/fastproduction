@@ -30,13 +30,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   const tabs = {
     machines: document.getElementById("machinesTab"),
     scopes: document.getElementById("scopesTab"),
-    videos: document.getElementById("videosTab")
+    videos: document.getElementById("videosTab"),
+    designs: document.getElementById("designsTab")
   };
 
   const panels = {
     machines: document.getElementById("machinesPanel"),
     scopes: document.getElementById("scopesPanel"),
-    videos: document.getElementById("videosPanel")
+    videos: document.getElementById("videosPanel"),
+    designs: document.getElementById("designsPanel")
   };
 
   function showTab(name) {
@@ -54,6 +56,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("manageVideosLink");
 
   manageVideosLink.hidden = !isOwnProfile;
+
+  const manageDesignsLink =
+    document.getElementById("manageDesignsLink");
+
+  manageDesignsLink.hidden = !isOwnProfile;
 
   const { data: profile, error: profileError } = await db
     .from("profiles")
@@ -374,6 +381,72 @@ document.addEventListener("DOMContentLoaded", async () => {
     list.appendChild(grid);
   }
 
+
+  async function loadDesigns() {
+    const list = document.getElementById("designList");
+
+    try {
+      list.textContent = "Memuat desain...";
+
+      const { data, error } = await db
+        .from("user_designs")
+        .select("id, title, description, image_url, created_at")
+        .eq("user_id", targetUserId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      list.replaceChildren();
+
+      if (!data || data.length === 0) {
+        list.textContent = "Belum ada desain.";
+        return;
+      }
+
+      const grid = document.createElement("div");
+      grid.style.display = "grid";
+      grid.style.gridTemplateColumns =
+        "repeat(auto-fit, minmax(min(100%, 240px), 1fr))";
+      grid.style.gap = "16px";
+
+      data.forEach(design => {
+        const card = document.createElement("article");
+        card.className = "profile-card";
+
+        if (design.image_url) {
+          const image = document.createElement("img");
+          image.src = design.image_url;
+          image.alt = design.title || "Design";
+          image.loading = "lazy";
+          image.style.width = "100%";
+          image.style.aspectRatio = "4 / 5";
+          image.style.objectFit = "cover";
+          image.style.borderRadius = "10px";
+          image.style.marginBottom = "12px";
+          image.onerror = () => image.remove();
+          card.appendChild(image);
+        }
+
+        addText(card, "h3", design.title || "Tanpa Judul");
+        if (design.description) {
+          addText(card, "p", design.description);
+        }
+
+        const price = addText(card, "span", "Edit Harga · Segera");
+        price.className = "profile-machine-tag";
+        price.style.display = "inline-block";
+        price.style.marginTop = "10px";
+
+        grid.appendChild(card);
+      });
+
+      list.appendChild(grid);
+    } catch (err) {
+      console.error("LOAD DESIGNS ERROR:", err);
+      list.textContent = "Gagal memuat desain: " + err.message;
+    }
+  }
+
   function getYouTubeId(value) {
     try {
       const url = new URL(value);
@@ -408,6 +481,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await Promise.all([
     loadMachines(),
     loadScopes(),
-    loadVideos()
+    loadVideos(),
+    loadDesigns()
   ]);
 });

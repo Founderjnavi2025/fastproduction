@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kelola Design · FastProduction</title>
+  <link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+  <main class="profile-page">
+    <header class="profile-header">
+      <div class="profile-identity">
+        <h1>Kelola Design</h1>
+        <p>Kelola koleksi desain produkmu.</p>
+      </div>
+    </header>
+
+    <section class="profile-section">
+      <h2 id="formTitle">Tambah Design</h2>
+
+      <form id="designForm" class="profile-card">
+        <input type="hidden" id="designId">
+
+        <label for="designTitle">Nama Design</label>
+        <input id="designTitle" type="text" maxlength="120"
+          placeholder="Contoh: Kaos Streetwear" required>
+
+        <label for="designDescription">Deskripsi</label>
+        <textarea id="designDescription" rows="4"
+          placeholder="Ceritakan detail desain..."></textarea>
+
+        <label for="designImage">URL Gambar</label>
+        <input id="designImage" type="url"
+          placeholder="https://contoh.com/gambar.jpg">
+
+        <div class="machine-actions">
+          <button type="submit" id="saveDesignButton">Simpan Design</button>
+          <button type="button" id="cancelEditButton" class="secondary" hidden>
+            Batal Edit
+          </button>
+        </div>
+      </form>
+
+      <div class="profile-card" style="margin-top:14px">
+        <strong>Edit Harga</strong>
+        <p>Pengaturan harga akan tersedia pada tahap berikutnya.</p>
+        <button type="button" class="secondary" disabled>
+          Edit Harga · Segera
+        </button>
+      </div>
+    </section>
+
+    <section class="profile-section">
+      <h2>Design Saya</h2>
+      <div id="designManagementList">
+        <p class="profile-empty">Memuat desain...</p>
+      </div>
+    </section>
+
+    <p id="designMessage"></p>
+    <a class="back-link" href="profile.html">← Kembali ke Profil</a>
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/logout.js"></script>
+  <script src="assets/js/design.js"></script>
+</body>
+</html>
