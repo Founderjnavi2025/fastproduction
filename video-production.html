@@ -1,54 +1,14 @@
 <!doctype html>
 <html lang="id">
 <head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Video Production · FastProduction</title>
   <link rel="stylesheet" href="assets/css/app.css">
-  <style>
-    .video-manager {
-      width: min(900px, 94%);
-      margin: 30px auto;
-    }
-    .video-form {
-      display: grid;
-      gap: 12px;
-      margin: 20px 0;
-    }
-    .video-form input,
-    .video-form textarea {
-      width: 100%;
-      padding: 12px;
-      box-sizing: border-box;
-    }
-    .video-item {
-      display: grid;
-      grid-template-columns: minmax(120px, 220px) 1fr;
-      gap: 16px;
-      padding: 16px;
-      margin: 14px 0;
-      border: 1px solid #444;
-      border-radius: 12px;
-    }
-    .video-item img {
-      width: 100%;
-      aspect-ratio: 16/9;
-      object-fit: cover;
-      border-radius: 8px;
-    }
-    .video-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 12px;
-    }
-    .video-actions button {
-      padding: 8px 14px;
-    }
-    @media(max-width:550px) {
-      .video-item { grid-template-columns: 1fr; }
-    }
-  </style>
 </head>
 <body>
   <main class="video-manager">

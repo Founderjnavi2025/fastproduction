@@ -1,67 +1,14 @@
 <!doctype html>
 <html lang="id">
 <head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Inventaris Mesin · FastProduction</title>
   <link rel="stylesheet" href="assets/css/app.css">
-  <style>
-    .machine-card {
-      padding: 16px;
-      margin-top: 12px;
-      border: 1px solid #354052;
-      border-radius: 12px;
-      background: #111722;
-    }
-    .machine-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 12px 0;
-    }
-    .machine-tag {
-      padding: 5px 9px;
-      border-radius: 7px;
-      background: #263344;
-      color: #cbd5e1;
-      font-size: 12px;
-    }
-    .machine-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 14px;
-    }
-    .machine-actions button { flex: 1; }
-    .secondary { background: #354052; }
-    .danger { background: #a83245; }
-    .success { background: #147d55; }
-    .section-title { margin-top: 30px; }
-    .empty {
-      padding: 24px;
-      text-align: center;
-      border: 1px dashed #354052;
-      border-radius: 12px;
-      color: #aab3c2;
-    }
-    .catalog-info {
-      color: #94a3b8;
-      font-size: 12px;
-      margin: 6px 0 14px;
-    }
-    .operator-list {
-      color: #cbd5e1;
-      font-size: 13px;
-      white-space: pre-line;
-      margin: 8px 0;
-    }
-    .ad-status {
-      font-size: 12px;
-      margin-top: 10px;
-      color: #94a3b8;
-    }
-    select:disabled { opacity: .5; cursor: not-allowed; }
-  </style>
 </head>
 <body>
   <main class="auth-container" style="width:min(650px,calc(100% - 24px))">
