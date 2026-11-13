@@ -232,51 +232,65 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function loadScopes() {
     const list = document.getElementById("scopeList");
-    list.textContent = "Memuat Scope...";
 
-    const { data, error } = await db
-      .from("scopes")
-      .select("*")
-      .eq("creator_id", targetUserId)
-      .order("created_at", { ascending: false });
+    try {
+      list.textContent = "Memuat Scope...";
 
-    console.log("SCOPE DEBUG:", { targetUserId, data, error });
-    if (error) {
-      list.textContent = "ERROR SCOPE: " + error.message;
-      return;
+      const { data, error } = await db
+        .from("scopes")
+        .select("*")
+        .eq("creator_id", targetUserId)
+        .order("created_at", { ascending: false });
+
+      console.log("SCOPE DEBUG:", { targetUserId, data, error });
+
+      if (error) throw error;
+
+      list.replaceChildren();
+
+      if (!data || data.length === 0) {
+        list.textContent = "Belum ada Scope.";
+        return;
+      }
+
+      data.forEach(scope => {
+        const card = document.createElement("article");
+        card.className = "profile-card";
+
+        const title = document.createElement("h3");
+        title.textContent = scope.title || "Tanpa Judul";
+        card.appendChild(title);
+
+        const description = document.createElement("p");
+        description.textContent = scope.description || "Tidak ada deskripsi.";
+        card.appendChild(description);
+
+        const details = [
+          "Target: " + (scope.target_qty ?? 0) + " pcs",
+          "Harga total: " + rupiah.format(scope.price_total ?? 0),
+          "Status: " + (scope.status || "open"),
+          "Deadline: " + (scope.deadline || "Tanpa deadline")
+        ];
+
+        details.forEach(value => {
+          const p = document.createElement("p");
+          p.textContent = value;
+          card.appendChild(p);
+        });
+
+        if (Array.isArray(scope.job_desks) && scope.job_desks.length) {
+          const desks = document.createElement("p");
+          desks.textContent = "Pekerjaan: " + scope.job_desks.join(", ");
+          card.appendChild(desks);
+        }
+
+        list.appendChild(card);
+      });
+
+    } catch (err) {
+      console.error("LOAD SCOPE ERROR:", err);
+      list.textContent = "Gagal menampilkan Scope: " + (err.message || err);
     }
-    if (!data) {
-      list.textContent = "DATA SCOPE NULL";
-      return;
-    }
-    if (!data.length) {
-      list.textContent = "QUERY BERHASIL, TAPI DATA KOSONG";
-      return;
-    }
-
-    if (error) {
-      list.textContent = "Gagal memuat Scope: " + error.message;
-      return;
-    }
-
-    list.replaceChildren();
-
-    if (!data || !data.length) {
-      list.textContent = "Data Scope kosong.";
-      return;
-    }
-
-    data.forEach(scope => {
-      const card = document.createElement("article");
-      card.className = "profile-card";
-
-      addText(card, "h3", scope.title || "Tanpa Judul");
-      addText(card, "p", scope.description || "Tidak ada deskripsi.");
-      addText(card, "p", "Target: " + (scope.target_qty ?? 0) + " pcs");
-      addText(card, "p", "Status: " + (scope.status || "open"));
-
-      list.appendChild(card);
-    });
   }
 
   async function loadVideos() {
