@@ -89,5 +89,28 @@
     }
   }
 
+
+  const logoutButton = document.getElementById("logoutButton");
+
+  if (logoutButton) {
+    logoutButton.addEventListener("click", async () => {
+      if (!confirm("Yakin ingin keluar dari FastProduction?")) return;
+
+      logoutButton.disabled = true;
+      logoutButton.textContent = "KELUAR...";
+
+      const { error } = await window.db.auth.signOut({ scope: "local" });
+
+      if (error) {
+        alert("Logout gagal: " + error.message);
+        logoutButton.disabled = false;
+        logoutButton.textContent = "LOGOUT";
+        return;
+      }
+
+      window.location.replace("login.html");
+    });
+  }
+
   loadUser();
 })();

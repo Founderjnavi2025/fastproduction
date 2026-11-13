@@ -321,6 +321,25 @@ main { padding-bottom: 125px; }
   }
 }
 
+
+.logout-btn {
+  flex-shrink: 0;
+  padding: 9px 13px;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+.logout-btn:hover {
+  border-color: #c6ff69;
+  color: #c6ff69;
+}
+
 </style>
 </head>
 <body>
@@ -328,6 +347,7 @@ main { padding-bottom: 125px; }
   <div class="brand">FAST<span>PRODUCTION</span></div>
   <div class="top-meta">JARINGAN PRODUKSI / 01</div>
   <a href="profile.html" class="profile-link" id="profileInitial">U</a>
+  <button type="button" class="logout-btn" id="logoutButton">LOGOUT</button>
 </header>
 
 <main>
