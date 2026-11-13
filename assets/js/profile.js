@@ -140,7 +140,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const { data, error } = await db
       .from("scopes")
-      .select("id, title, description, target_qty, price_total, deadline, status")
+      .select("id, title, description, target_qty, price_total, job_desks, deadline, status")
       .eq("creator_id", targetUserId)
       .order("created_at", { ascending: false });
 
@@ -191,6 +191,33 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
 
       card.append(title, description, price, meta);
+
+      const desks = Array.isArray(scope.job_desks)
+        ? scope.job_desks
+        : [];
+
+      if (desks.length) {
+        const deskSection = document.createElement("section");
+        deskSection.style.marginTop = "18px";
+
+        const deskTitle = document.createElement("strong");
+        deskTitle.textContent = "Rangkaian Pekerjaan";
+        deskTitle.style.fontSize = "12px";
+
+        const deskList = document.createElement("div");
+        deskList.className = "profile-meta";
+        deskList.style.marginTop = "10px";
+
+        desks.forEach(desk => {
+          const tag = document.createElement("span");
+          tag.textContent = desk;
+          deskList.appendChild(tag);
+        });
+
+        deskSection.append(deskTitle, deskList);
+        card.appendChild(deskSection);
+      }
+
       list.appendChild(card);
     });
   }

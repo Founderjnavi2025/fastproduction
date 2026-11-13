@@ -29,13 +29,13 @@
 
       const title = document.getElementById("title").value.trim();
       const description = document.getElementById("description").value.trim();
-      const targetQty = Number(
-        document.getElementById("targetQty").value
-      );
-      const priceTotal = Number(
-        document.getElementById("priceTotal").value
-      );
+      const targetQty = Number(document.getElementById("targetQty").value);
+      const priceTotal = Number(document.getElementById("priceTotal").value);
       const deadline = deadlineInput.value || null;
+
+      const jobDesks = Array.from(
+        form.querySelectorAll('input[name="jobDesk"]:checked')
+      ).map(input => input.value);
 
       if (!title) {
         message.textContent = "Judul pekerjaan wajib diisi.";
@@ -70,15 +70,14 @@
             description: description || null,
             target_qty: targetQty,
             price_total: priceTotal,
+            job_desks: jobDesks,
             deadline,
             status: "open"
           })
           .select("id")
           .single();
 
-        if (insertError) {
-          throw insertError;
-        }
+        if (insertError) throw insertError;
 
         form.reset();
         document.getElementById("targetQty").value = 100;

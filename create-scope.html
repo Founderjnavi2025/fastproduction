@@ -13,7 +13,7 @@
     }
 
     .scope-container {
-      width: min(650px, calc(100% - 28px));
+      width: min(680px, calc(100% - 28px));
       margin: 35px auto;
     }
 
@@ -32,7 +32,7 @@
       background: #111722;
     }
 
-    .scope-card label {
+    .scope-card label.field-label {
       display: block;
       margin: 18px 0 8px;
       font-size: 13px;
@@ -40,7 +40,7 @@
       color: #cbd5e1;
     }
 
-    .scope-card input,
+    .scope-card input:not([type="checkbox"]),
     .scope-card textarea {
       width: 100%;
       box-sizing: border-box;
@@ -73,6 +73,65 @@
       color: #94a3b8;
       font-size: 12px;
       line-height: 1.6;
+    }
+
+    .desk-section {
+      margin-top: 25px;
+      padding: 16px;
+      border: 1px solid #354052;
+      border-radius: 12px;
+      background: #0d1420;
+    }
+
+    .desk-heading {
+      margin: 0 0 5px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .desk-group {
+      margin-top: 18px;
+    }
+
+    .desk-group-title {
+      margin-bottom: 10px;
+      color: #c6ff69;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .5px;
+    }
+
+    .desk-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .desk-option {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 11px;
+      border: 1px solid #354052;
+      border-radius: 8px;
+      background: #111722;
+      color: #cbd5e1;
+      font-size: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .desk-option:has(input:checked) {
+      border-color: #c6ff69;
+      background: #202d20;
+      color: #c6ff69;
+    }
+
+    .desk-option input {
+      width: 15px;
+      height: 15px;
+      margin: 0;
+      accent-color: #c6ff69;
     }
 
     .scope-submit {
@@ -110,7 +169,6 @@
 
 <body>
   <main class="scope-container">
-
     <header class="scope-header">
       <a href="dashboard.html" class="scope-back">← Dashboard</a>
       <strong>FAST<span style="color:#c6ff69">PRODUCTION</span></strong>
@@ -129,24 +187,23 @@
       </p>
 
       <form id="scopeForm">
-
-        <label for="title">Judul Pekerjaan</label>
+        <label class="field-label" for="title">Judul Pekerjaan</label>
         <input
           id="title"
           type="text"
           maxlength="150"
-          placeholder="Contoh: Obras kaos 500 pcs"
+          placeholder="Contoh: Oblong promosi 1.000 pcs"
           required
         >
 
-        <label for="description">Deskripsi Pekerjaan</label>
+        <label class="field-label" for="description">Deskripsi Pekerjaan</label>
         <textarea
           id="description"
           maxlength="5000"
           placeholder="Jelaskan jenis pekerjaan, bahan, detail pengerjaan, dan informasi lainnya..."
         ></textarea>
 
-        <label for="targetQty">Jumlah Barang (pcs)</label>
+        <label class="field-label" for="targetQty">Jumlah Barang (pcs)</label>
         <input
           id="targetQty"
           type="number"
@@ -156,22 +213,74 @@
           required
         >
 
-        <label for="priceTotal">Harga Total Pengerjaan (Rp)</label>
+        <label class="field-label" for="priceTotal">Harga Total Pengerjaan (Rp)</label>
         <input
           id="priceTotal"
           class="price-input"
           type="number"
           min="0"
           step="1000"
-          placeholder="Contoh: 1500000"
+          placeholder="Contoh: 4000000"
           required
         >
-
         <p class="scope-info">
           Harga untuk keseluruhan pekerjaan, bukan harga per pcs.
         </p>
 
-        <label for="deadline">Deadline (Opsional)</label>
+        <section class="desk-section">
+          <h2 class="desk-heading">Rangkaian Pekerjaan</h2>
+          <p class="scope-info">
+            Pilih proses produksi yang termasuk dalam pekerjaan ini.
+            Opsional, boleh dikosongkan.
+          </p>
+
+          <div class="desk-group">
+            <div class="desk-group-title">PERSIAPAN BAHAN</div>
+            <div class="desk-options">
+              <label class="desk-option"><input type="checkbox" name="jobDesk" value="Pembuatan pola">Pembuatan pola</label>
+              <label class="desk-option"><input type="checkbox" name="jobDesk" value="Marker">Marker</label>
+              <label class="desk-option"><input type="checkbox" name="jobDesk" value="Potong bahan">Potong bahan</label>
+              <label class="desk-option"><input type="checkbox" name="jobDesk" value="Fusing">Fusing</label>
+            </div>
+          </div>
+
+          <div class="desk-group">
+            <div class="desk-group-title">DEKORASI</div>
+            <div class="desk-options">
+              <label class="desk-option"><input type="checkbox" name="jobDesk" value="Sablon">Sablon</label>
+              <label class="desk-option"><input type="checkbox" name="jobDesk" value="Bordir">Bordir</label>
+              <label class="desk-option"><input type="checkbox" name="jobDesk" value="Printing">Printing</label>
+            </div>
+          </div>
+
+          <div class="desk-group">
+            <div class="desk-group-title">JAHIT & PERAKITAN</div>
+            <div class="desk-options">
+              <label class="desk-option"><input type="checkbox" name="jobDesk" value="Jahit">Jahit</label>
+              <label class="desk-option"><input type="checkbox" name="jobDesk" value="Obras">Obras</label>
+              <label class="desk-option"><input type="checkbox" name="jobDesk" value="Kam / Overdeck">Kam / Overdeck</label>
+              <label class="desk-option"><input type="checkbox" name="jobDesk" value="Jahit rantai">Jahit rantai</label>
+              <label class="desk-option"><input type="checkbox" name="jobDesk" value="Pasang resleting">Pasang resleting</label>
+              <label class="desk-option"><input type="checkbox" name="jobDesk" value="Lubang kancing">Lubang kancing</label>
+              <label class="desk-option"><input type="checkbox" name="jobDesk" value="Pasang kancing">Pasang kancing</label>
+              <label class="desk-option"><input type="checkbox" name="jobDesk" value="Pasang label">Pasang label</label>
+            </div>
+          </div>
+
+          <div class="desk-group">
+            <div class="desk-group-title">FINISHING & PENGEMASAN</div>
+            <div class="desk-options">
+              <label class="desk-option"><input type="checkbox" name="jobDesk" value="Trimming benang">Trimming benang</label>
+              <label class="desk-option"><input type="checkbox" name="jobDesk" value="Washing">Washing</label>
+              <label class="desk-option"><input type="checkbox" name="jobDesk" value="Setrika / Steam">Setrika / Steam</label>
+              <label class="desk-option"><input type="checkbox" name="jobDesk" value="Quality Control">Quality Control</label>
+              <label class="desk-option"><input type="checkbox" name="jobDesk" value="Lipat barang">Lipat barang</label>
+              <label class="desk-option"><input type="checkbox" name="jobDesk" value="Packaging">Packaging</label>
+            </div>
+          </div>
+        </section>
+
+        <label class="field-label" for="deadline">Deadline (Opsional)</label>
         <input id="deadline" type="date">
 
         <button class="scope-submit" id="submitButton" type="submit">
