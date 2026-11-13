@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10120f">
+  <title>Global Scope · FastProduction</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/app.css">
+
+  <style>
+    :root {
+      --bg: #10120f;
+      --panel: #161a15;
+      --panel-2: #1b211a;
+      --line: #2a3327;
+      --line-strong: #3a4636;
+      --muted: #8b978a;
+      --white: #f1f5ef;
+      --accent: #c6ff69;
+      --accent-dim: #8fb84a;
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: var(--font-display);
+      margin: 0;
+    }
+
+    .global-container {
+      width: min(920px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 28px 0 90px;
+    }
+
+    /* ==== Header ==== */
+    .global-header {
+      margin-bottom: 22px;
+    }
+
+    .global-header h1 {
+      font: 700 clamp(22px, 4vw, 28px)/1.2 var(--font-display);
+      letter-spacing: -0.6px;
+      margin: 0 0 6px;
+    }
+
+    .global-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .back-link-global {
+      display: inline-block;
+      margin-bottom: 18px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+    }
+    .back-link-global:hover { color: var(--accent); }
+
+    /* ==== Message / status ==== */
+    #scopeMessage {
+      padding: 10px 14px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 12px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.2px;
+    }
+
+    /* ==== Section ==== */
+    .global-section {
+      margin-bottom: 32px;
+    }
+
+    .global-section > h2 {
+      font: 700 15px/1.2 var(--font-display);
+      letter-spacing: -0.2px;
+      margin: 0 0 12px;
+      color: var(--white);
+    }
+
+    .global-section > p {
+      color: var(--muted);
+      font-size: 12px;
+      padding: 18px;
+      border: 1px dashed var(--line-strong);
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    /* ==== Card ==== */
+    .scope-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 12px;
+      transition: border-color .15s;
+    }
+
+    .scope-card:hover {
+      border-color: var(--line-strong);
+    }
+
+    .scope-card-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .scope-card-heading h3 {
+      font: 600 15px/1.35 var(--font-display);
+      margin: 0;
+      color: var(--white);
+      letter-spacing: -0.2px;
+      overflow-wrap: anywhere;
+    }
+
+    .scope-status {
+      flex-shrink: 0;
+      padding: 4px 9px;
+      border-radius: 20px;
+      background: rgba(198,255,105,.1);
+      color: var(--accent);
+      font: 700 10px var(--font-mono);
+      letter-spacing: 0.6px;
+    }
+
+    .scope-owner {
+      margin: 8px 0 0 !important;
+      color: var(--muted) !important;
+      font-size: 12px !important;
+    }
+
+    .scope-card p {
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--muted);
+      margin: 6px 0;
+      overflow-wrap: anywhere;
+    }
+
+    /* ==== Stats ==== */
+    .scope-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 14px 0;
+    }
+
+    .scope-stat {
+      padding: 12px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      min-width: 0;
+    }
+
+    .scope-stat strong {
+      display: block;
+      font: 700 16px var(--font-display);
+      color: var(--accent);
+      letter-spacing: -0.3px;
+      overflow-wrap: anywhere;
+    }
+
+    .scope-stat small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font: 500 10px var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .scope-deadline,
+    .scope-jobs-summary {
+      color: var(--muted) !important;
+      font-size: 11px !important;
+      font-family: var(--font-mono) !important;
+      letter-spacing: 0.2px;
+    }
+
+    /* ==== Buttons ==== */
+    .scope-card button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      padding: 0 13px;
+      margin: 10px 8px 0 0;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--white);
+      font: 600 12px var(--font-display);
+      cursor: pointer;
+      transition: .15s;
+    }
+
+    .scope-card button:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .detail-button {
+      background: var(--panel-2) !important;
+      color: var(--muted) !important;
+      border-color: var(--line) !important;
+    }
+    .detail-button:hover {
+      color: var(--white) !important;
+      border-color: var(--line-strong) !important;
+    }
+
+    .publish-button,
+    .offer-button,
+    .submit-offer {
+      background: var(--accent) !important;
+      color: #141a10 !important;
+      border: 0 !important;
+    }
+    .publish-button:hover,
+    .offer-button:hover,
+    .submit-offer:hover {
+      background: #d4ff85 !important;
+      color: #141a10 !important;
+    }
+
+    .submit-offer:disabled {
+      opacity: .5;
+      cursor: wait;
+    }
+
+    /* ==== Detail panel ==== */
+    .scope-detail {
+      border-top: 1px solid var(--line);
+      margin-top: 16px;
+      padding-top: 14px;
+    }
+
+    .scope-detail[hidden],
+    .offer-form[hidden] {
+      display: none !important;
+    }
+
+    .scope-detail h4 {
+      font: 600 12px var(--font-display);
+      color: var(--accent);
+      margin: 16px 0 8px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .scope-detail h4:first-child { margin-top: 0; }
+
+    /* ==== Offer form ==== */
+    .offer-form {
+      padding: 16px;
+      margin-top: 14px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    .offer-form h4 {
+      margin-top: 16px;
+    }
+
+    .offer-form h4:first-child { margin-top: 0; }
+
+    .offer-form textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 11px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--white);
+      font: 12px var(--font-display);
+      resize: vertical;
+    }
+
+    .offer-form textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    /* ==== Job groups ==== */
+    .job-group {
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 12px;
+      margin: 12px 0;
+    }
+
+    .job-group legend {
+      padding: 0 6px;
+      font: 700 10px var(--font-mono);
+      color: var(--accent-dim);
+      letter-spacing: 0.6px;
+    }
+
+    .job-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .job-option {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 9px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 11px;
+      cursor: pointer;
+      user-select: none;
+      transition: .15s;
+    }
+
+    .job-option:has(input:checked) {
+      border-color: var(--accent);
+      background: rgba(198,255,105,.08);
+      color: var(--accent);
+    }
+
+    .job-option input {
+      width: 13px;
+      height: 13px;
+      margin: 0;
+      accent-color: var(--accent);
+    }
+
+    .offer-status {
+      font-size: 12px;
+      color: var(--muted);
+      margin: 10px 0 0 !important;
+      min-height: 16px;
+    }
+
+    /* ==== Offers list ==== */
+    .offers-container h4 {
+      margin-top: 16px;
+    }
+
+    .offer-item {
+      padding: 13px;
+      margin: 10px 0;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--panel);
+    }
+
+    .offer-item strong {
+      display: block;
+      font: 600 13px var(--font-display);
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+
+    .offer-item p {
+      margin: 4px 0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .offer-item small {
+      display: block;
+      margin-top: 8px;
+      font: 500 10px var(--font-mono);
+      color: var(--accent-dim);
+      letter-spacing: 0.3px;
+    }
+
+    /* ==== Mobile ==== */
+    @media (max-width: 560px) {
+      .global-container {
+        width: calc(100% - 24px);
+        padding-top: 22px;
+      }
+      .scope-card { padding: 15px; }
+      .scope-stat strong { font-size: 14px; }
+      .job-options { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="global-container">
+    <a href="dashboard.html" class="back-link-global">← Dashboard</a>
+
+    <header class="global-header">
+      <h1>Global Scope</h1>
+      <p>Temukan pekerjaan produksi dari seluruh jaringan FastProduction.</p>
+    </header>
+
+    <section id="scopeMessage">
+      Memuat pekerjaan produksi...
+    </section>
+
+    <div id="scopeList"></div>
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/global-scope.js"></script>
+
+</body>
+</html>

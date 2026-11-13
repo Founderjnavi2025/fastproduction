@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10120f">
+  <title>Detail Scope · FastProduction</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/app.css">
+
+  <style>
+    :root {
+      --detail-bg: #10120f;
+      --detail-panel: #161a15;
+      --detail-panel-2: #1b211a;
+      --detail-line: #2a3327;
+      --detail-strong: #3a4636;
+      --detail-muted: #8b978a;
+      --detail-white: #f1f5ef;
+      --detail-accent: #c6ff69;
+      --detail-font: 'Space Grotesk', sans-serif;
+      --detail-mono: 'DM Mono', monospace;
+    }
+
+    body {
+      margin: 0;
+      background: var(--detail-bg);
+      color: var(--detail-white);
+      font-family: var(--detail-font);
+    }
+
+    .detail-container {
+      width: min(760px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 28px 0 90px;
+    }
+
+    .back-link-global {
+      display: inline-block;
+      margin-bottom: 18px;
+      color: var(--detail-muted);
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .back-link-global:hover {
+      color: var(--detail-accent);
+    }
+
+    .detail-header,
+    .detail-section {
+      padding: 18px;
+      background: var(--detail-panel);
+      border: 1px solid var(--detail-line);
+      border-radius: 14px;
+      margin-bottom: 14px;
+    }
+
+    .detail-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .detail-header h1 {
+      margin: 0;
+      font-size: clamp(20px, 4vw, 26px);
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .scope-status {
+      flex-shrink: 0;
+      padding: 5px 10px;
+      border-radius: 20px;
+      background: rgba(198,255,105,.1);
+      color: var(--detail-accent);
+      font: 700 10px var(--detail-mono);
+    }
+
+    .detail-owner {
+      margin: 10px 0 0;
+      color: var(--detail-muted);
+      font: 12px var(--detail-mono);
+    }
+
+    .detail-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin: 14px 0;
+    }
+
+    .detail-stat {
+      min-width: 0;
+      padding: 12px;
+      background: var(--detail-panel-2);
+      border: 1px solid var(--detail-line);
+      border-radius: 9px;
+    }
+
+    .detail-stat strong {
+      display: block;
+      color: var(--detail-accent);
+      font-size: 17px;
+      overflow-wrap: anywhere;
+    }
+
+    .detail-stat small {
+      display: block;
+      margin-top: 4px;
+      color: var(--detail-muted);
+      font: 10px var(--detail-mono);
+      text-transform: uppercase;
+    }
+
+    .detail-section h2 {
+      margin: 0 0 12px;
+      font-size: 14px;
+    }
+
+    .detail-section h2.accent {
+      color: var(--detail-accent);
+    }
+
+    .detail-section p {
+      margin: 0 0 8px;
+      color: var(--detail-muted);
+      font-size: 13px;
+      line-height: 1.65;
+      overflow-wrap: anywhere;
+    }
+
+    .detail-section p:last-child {
+      margin-bottom: 0;
+    }
+
+    .job-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .job-chip {
+      padding: 5px 9px;
+      border: 1px solid var(--detail-line);
+      border-radius: 6px;
+      background: var(--detail-panel-2);
+      color: var(--detail-muted);
+      font: 11px var(--detail-mono);
+    }
+
+    .offer-form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .offer-form label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--detail-white);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .offer-form textarea {
+      box-sizing: border-box;
+      width: 100%;
+      min-height: 100px;
+      padding: 11px;
+      border: 1px solid var(--detail-strong);
+      border-radius: 8px;
+      background: var(--detail-bg);
+      color: var(--detail-white);
+      font: 13px var(--detail-font);
+      resize: vertical;
+    }
+
+    .offer-form textarea:focus {
+      outline: none;
+      border-color: var(--detail-accent);
+    }
+
+    .job-group {
+      padding: 12px;
+      border: 1px solid var(--detail-line);
+      border-radius: 9px;
+    }
+
+    .job-group legend {
+      padding: 0 6px;
+      color: var(--detail-accent);
+      font: 10px var(--detail-mono);
+    }
+
+    .job-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .job-option {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px;
+      border: 1px solid var(--detail-line);
+      border-radius: 7px;
+      background: var(--detail-panel);
+      color: var(--detail-muted);
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .job-option:has(input:checked) {
+      border-color: var(--detail-accent);
+      color: var(--detail-accent);
+      background: rgba(198,255,105,.08);
+    }
+
+    .job-option input {
+      width: 14px;
+      height: 14px;
+      margin: 0;
+      accent-color: var(--detail-accent);
+    }
+
+    .submit-offer {
+      justify-self: start;
+      min-height: 40px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: 9px;
+      background: var(--detail-accent);
+      color: #141a10;
+      font: 700 12px var(--detail-font);
+      cursor: pointer;
+    }
+
+    .submit-offer:disabled {
+      opacity: .5;
+      cursor: wait;
+    }
+
+    .offer-status {
+      min-height: 16px;
+      color: var(--detail-muted);
+      font: 12px var(--detail-mono);
+    }
+
+    .offer-item {
+      padding: 14px;
+      margin-bottom: 10px;
+      border: 1px solid var(--detail-line);
+      border-radius: 10px;
+      background: var(--detail-panel-2);
+    }
+
+    .offer-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .offer-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .offer-head strong {
+      color: var(--detail-white);
+      font-size: 13px;
+    }
+
+    .offer-head time {
+      color: var(--detail-accent);
+      font: 10px var(--detail-mono);
+    }
+
+    .offer-item p {
+      margin: 6px 0;
+      color: var(--detail-muted);
+      font-size: 12px;
+      line-height: 1.55;
+      overflow-wrap: anywhere;
+    }
+
+    .offer-item .job-chips {
+      margin-top: 8px;
+    }
+
+    .empty-note {
+      padding: 18px;
+      border: 1px dashed var(--detail-strong);
+      border-radius: 10px;
+      color: var(--detail-muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    @media (max-width: 560px) {
+      .detail-container {
+        width: calc(100% - 24px);
+        padding-top: 22px;
+      }
+
+      .job-options {
+        grid-template-columns: 1fr;
+      }
+
+      .detail-stat strong {
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="detail-container">
+
+    <a href="global-scope.html" class="back-link-global">
+      ← Global Scope
+    </a>
+
+    <div id="detailRoot">
+      <p class="empty-note">Memuat detail Scope...</p>
+    </div>
+
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/scope-detail.js"></script>
+</body>
+</html>
