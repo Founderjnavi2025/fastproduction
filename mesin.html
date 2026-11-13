@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#10120f">
+<title>FastProduction — Pekerjaan</title>
+<style>
+:root{--bg:#10120f;--panel:#191d18;--line:#30372e;--muted:#899187;--lime:#c6ff69;--white:#f3f5ed;--orange:#ffc16b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--white);font-family:Arial,sans-serif;padding-bottom:100px}
+header{height:65px;padding:0 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.brand{font-size:14px;font-weight:bold;letter-spacing:1.5px}.brand span{color:var(--lime)}
+main{width:min(850px,calc(100% - 30px));margin:25px auto}
+.muted{color:var(--muted);font-size:12px}
+h1{font-size:30px;margin:8px 0}
+h2{font-size:17px;margin:0}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.primary{background:var(--lime);color:#111;border:0;padding:13px 17px;border-radius:9px;font-weight:bold}
+.outline{background:transparent;color:var(--white);border:1px solid var(--line);padding:10px 14px;border-radius:9px}
+.section{margin-top:28px}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;gap:10px}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tab{flex:1;padding:11px;border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:9px}
+.tab.active{border-color:var(--lime);color:var(--lime)}
+.job{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer}
+.job-name{font-weight:bold;margin-bottom:6px}
+.job-qty{font-size:18px;font-weight:bold;white-space:nowrap}
+.status{font-size:10px;color:var(--orange);margin-top:6px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:17px}
+.field{margin:15px 0}
+label{display:block;color:var(--muted);font-size:12px;margin-bottom:8px}
+input,select{width:100%;background:#10140f;color:var(--white);border:1px solid var(--line);border-radius:8px;padding:13px;outline:none}
+input:focus,select:focus{border-color:var(--lime)}
+.actions{display:flex;gap:9px;margin-top:18px}
+.actions button{flex:1}
+.hidden{display:none!important}
+.back{color:var(--lime);font-size:12px;cursor:pointer;margin-bottom:22px}
+.detail-row{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line);font-size:13px;gap:15px}
+.detail-row:last-child{border:0}
+.notice{background:#25271e;padding:13px;border-radius:9px;color:var(--orange);font-size:12px;margin:12px 0}
+.bottom-nav{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);width:min(540px,calc(100% - 24px));background:#20251e;border:1px solid var(--line);border-radius:17px;padding:8px;display:flex;justify-content:space-around}
+.bottom-nav a{color:var(--muted);text-decoration:none;font-size:10px;text-align:center;padding:8px 3px}
+.bottom-nav a.active{color:var(--lime)}
+@media(min-width:650px){.job{padding:19px}.job:hover{border-color:var(--lime)}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">FAST<span>PRODUCTION</span></div>
+  <div class="muted">WORKSPACE / PEKERJAAN</div>
+  <strong>BB</strong>
+</header>
+
+<main>
+  <section id="listPage">
+    <div class="muted">Workspace / <b>Pekerjaan</b></div>
+    <div style="margin-top:28px">
+      <div class="muted">PRODUCTION WORKSPACE</div>
+      <h1>Pekerjaan</h1>
+      <div class="muted">Kelola barang yang diberikan kepada pekerja.</div>
+    </div>
+
+    <div style="margin-top:22px">
+      <button class="primary" onclick="openForm()">＋ Ambil Barang</button>
+    </div>
+
+    <section class="section">
+      <div class="section-head"><h2>Daftar pekerjaan</h2></div>
+      <div class="tabs">
+        <button class="tab active" id="activeTab" onclick="showTab('active')">Aktif (0)</button>
+        <button class="tab" id="doneTab" onclick="showTab('done')">Selesai (0)</button>
+      </div>
+      <div id="jobList" class="muted card" style="text-align:center">Belum ada pekerjaan tercatat.</div>
+    </section>
+  </section>
+
+  <section id="formPage" class="hidden">
+    <div class="back" onclick="showPage('listPage')">← Kembali ke daftar pekerjaan</div>
+    <div class="muted">PENUGASAN BARU</div>
+    <h1>Ambil Barang</h1>
+    <div class="card">
+      <div class="field">
+        <label>Nama pekerja</label>
+        <select id="worker">
+          <option value="">Pilih pekerja</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Nama barang / produk</label>
+        <input id="product" placeholder="Nama pakaian atau produk">
+      </div>
+      <div class="field">
+        <label>Jenis pekerjaan</label>
+        <select id="type">
+          <option value="">Pilih pekerjaan</option>
+          <option>Obras</option>
+          <option>Kam</option>
+          <option>Jahit</option>
+          <option>Kancing</option>
+          <option>Lainnya</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Jumlah barang diberikan</label>
+        <input id="quantity" type="number" min="1" placeholder="Jumlah PCS">
+      </div>
+      <div class="field">
+        <label>Tarif</label>
+        <input id="rate" type="number" min="0" placeholder="Nominal tarif">
+      </div>
+      <div class="field">
+        <label>Satuan tarif</label>
+        <select id="unit">
+          <option value="pcs">Per pcs</option>
+          <option value="lusin">Per lusin</option>
+        </select>
+      </div>
+      <button class="primary" style="width:100%" onclick="saveJob()">Simpan pekerjaan</button>
+    </div>
+  </section>
+
+  <section id="previousPage" class="hidden">
+    <div class="back" onclick="showPage('listPage')">← Kembali</div>
+    <div class="muted">PEKERJAAN SEBELUMNYA</div>
+    <h1 id="previousName">Barang</h1>
+    <div class="card">
+      <div class="notice">Menunggu laporan</div>
+      <div class="detail-row"><span>Jumlah awal</span><b id="previousStart">0 pcs</b></div>
+      <div class="detail-row"><span>Sudah dilaporkan</span><b id="previousReported">0 pcs</b></div>
+      <div class="field">
+        <label>Jumlah hasil pekerjaan (PCS)</label>
+        <input id="resultQty" type="number" min="0" placeholder="Jumlah hasil">
+      </div>
+      <div class="muted" id="remaining">Sisa pekerjaan: 0 pcs</div>
+      <div class="field">
+        <label>Keterangan pekerjaan</label>
+        <select id="description">
+          <option value="">Pilih keterangan</option>
+          <option>Masih dikerjakan</option>
+          <option>Selesai</option>
+          <option>Kurang mangset</option>
+          <option>Kurang rip</option>
+          <option>Kurang mangset + rip</option>
+          <option>Pekerja nonaktif</option>
+        </select>
+      </div>
+      <button class="primary" style="width:100%" onclick="saveReport()">Simpan laporan & lanjut</button>
+    </div>
+  </section>
+
+  <section id="detailPage" class="hidden">
+    <div class="back" onclick="showPage('listPage')">← Kembali ke daftar pekerjaan</div>
+    <div class="muted">DETAIL PEKERJAAN</div>
+    <h1 id="detailWorker">Pekerja</h1>
+    <div class="muted" id="detailSubtitle">Barang · Pekerjaan</div>
+    <div class="card section">
+      <div class="detail-row"><span>Pekerja</span><b id="dWorker"></b></div>
+      <div class="detail-row"><span>Barang</span><b id="dProduct"></b></div>
+      <div class="detail-row"><span>Jumlah</span><b id="dQty"></b></div>
+      <div class="detail-row"><span>Hasil dilaporkan</span><b id="dResult"></b></div>
+      <div class="detail-row"><span>Sisa</span><b id="dRemaining"></b></div>
+      <div class="detail-row"><span>Upah</span><b id="dPay"></b></div>
+      <div class="detail-row"><span>Status pekerjaan</span><b id="dStatus"></b></div>
+    </div>
+    <div class="section">
+      <h2>Riwayat pekerjaan</h2>
+      <div class="card muted" style="margin-top:12px" id="history">Belum ada riwayat.</div>
+    </div>
+  </section>
+</main>
+
+<nav class="bottom-nav">
+  <a href="dashboardroom.html">▦<br>Dashboard</a>
+  <a href="workers.html">♙<br>Pekerja</a>
+  <a href="mesin.html" class="active">▤<br>Pekerjaan</a>
+  <a href="monitor.html">◷<br>Monitor</a>
+  <a href="more.html">•••<br>Lainnya</a>
+</nav>
+
+<script>
+let jobs=[];
+let workers=[];
+let selectedJob=null;
+let currentTab='active';
+
+function showPage(id){
+  ['listPage','formPage','previousPage','detailPage'].forEach(x=>document.getElementById(x).classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  window.scrollTo(0,0);
+}
+function openForm(){
+  document.getElementById('worker').innerHTML='<option value="">Pilih pekerja</option>'+workers.map(w=>`<option>${escapeHtml(w)}</option>`).join('');
+  showPage('formPage');
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function saveJob(){
+  const worker=document.getElementById('worker').value;
+  const product=document.getElementById('product').value.trim();
+  const type=document.getElementById('type').value;
+  const quantity=Number(document.getElementById('quantity').value);
+  const rate=Number(document.getElementById('rate').value);
+  const unit=document.getElementById('unit').value;
+  if(!worker||!product||!type||quantity<1||rate<0||!document.getElementById('rate').value){
+    alert('Lengkapi data pekerjaan terlebih dahulu.');return;
+  }
+  const previous=jobs.find(j=>j.worker===worker&&j.status!=='Selesai'&&j.remaining>0);
+  if(previous){
+    selectedJob=previous;
+    showPrevious(previous);
+    return;
+  }
+  jobs.unshift({id:Date.now(),worker,product,type,quantity,result:0,remaining:quantity,rate,unit,status:'Belum setor',history:[]});
+  renderJobs();showPage('listPage');
+}
+function showPrevious(job){
+  document.getElementById('previousName').textContent=job.product;
+  document.getElementById('previousStart').textContent=job.quantity+' pcs';
+  document.getElementById('previousReported').textContent=job.result+' pcs';
+  document.getElementById('resultQty').value='';
+  document.getElementById('description').value='';
+  document.getElementById('remaining').textContent='Sisa pekerjaan: '+job.remaining+' pcs';
+  showPage('previousPage');
+}
+function saveReport(){
+  const result=Number(document.getElementById('resultQty').value);
+  const description=document.getElementById('description').value;
+  if(!Number.isInteger(result)||result<0||result>selectedJob.remaining||!description){
+    alert('Periksa jumlah hasil dan keterangan pekerjaan.');return;
+  }
+  selectedJob.result+=result;
+  selectedJob.remaining-=result;
+  selectedJob.status=description==='Selesai'&&selectedJob.remaining===0?'Selesai':'Belum setor';
+  selectedJob.history.unshift({result,description,date:new Date().toLocaleString('id-ID')});
+  renderJobs();showPage('listPage');
+}
+function showTab(tab){
+  currentTab=tab;
+  document.getElementById('activeTab').classList.toggle('active',tab==='active');
+  document.getElementById('doneTab').classList.toggle('active',tab==='done');
+  renderJobs();
+}
+function renderJobs(){
+  const active=jobs.filter(j=>j.status!=='Selesai');
+  const done=jobs.filter(j=>j.status==='Selesai');
+  document.getElementById('activeTab').textContent='Aktif ('+active.length+')';
+  document.getElementById('doneTab').textContent='Selesai ('+done.length+')';
+  const list=currentTab==='active'?active:done;
+  document.getElementById('jobList').innerHTML=list.length?list.map(j=>`
+    <article class="job" onclick="openDetail(${j.id})">
+      <div><div class="job-name">${escapeHtml(j.worker)}</div>
+      <div class="muted">${escapeHtml(j.product)} · ${escapeHtml(j.type)}</div>
+      <div class="status">${escapeHtml(j.status)}</div></div>
+      <div class="job-qty">${j.quantity} <small>pcs</small> ›</div>
+    </article>`).join(''):'Belum ada pekerjaan pada kategori ini.';
+}
+function openDetail(id){
+  const j=jobs.find(x=>x.id===id);if(!j)return;
+  selectedJob=j;
+  document.getElementById('detailWorker').textContent=j.worker;
+  document.getElementById('detailSubtitle').textContent=j.product+' · '+j.type;
+  document.getElementById('dWorker').textContent=j.worker;
+  document.getElementById('dProduct').textContent=j.product;
+  document.getElementById('dQty').textContent=j.quantity+' pcs';
+  document.getElementById('dResult').textContent=j.result+' pcs ✎';
+  document.getElementById('dRemaining').textContent=j.remaining+' pcs';
+  document.getElementById('dPay').textContent='Rp '+(j.result*(j.unit==='lusin'?j.rate/12:j.rate)).toLocaleString('id-ID');
+  document.getElementById('dStatus').textContent=j.status;
+  document.getElementById('history').innerHTML=j.history.length?j.history.map(h=>`<div class="detail-row"><span><b>Laporan kerja: ${h.result} pcs</b> — ${escapeHtml(h.description)}<br><small>${escapeHtml(h.date)}</small></span></div>`).join(''):'Belum ada riwayat.';
+  showPage('detailPage');
+}
+renderJobs();
+</script>
+</body>
+</html>
