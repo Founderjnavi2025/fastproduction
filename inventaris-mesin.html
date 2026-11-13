@@ -34,21 +34,24 @@
     .machine-actions button {
       flex: 1;
     }
-    .secondary {
-      background: #354052;
-    }
-    .danger {
-      background: #a83245;
-    }
-    .section-title {
-      margin-top: 30px;
-    }
+    .secondary { background: #354052; }
+    .danger { background: #a83245; }
+    .section-title { margin-top: 30px; }
     .empty {
       padding: 24px;
       text-align: center;
       border: 1px dashed #354052;
       border-radius: 12px;
       color: #aab3c2;
+    }
+    .catalog-info {
+      color: #94a3b8;
+      font-size: 12px;
+      margin: 6px 0 14px;
+    }
+    select:disabled {
+      opacity: .5;
+      cursor: not-allowed;
     }
   </style>
 </head>
@@ -65,27 +68,26 @@
       <form id="machineForm">
         <input type="hidden" id="machineId">
 
-        <label>Nama Mesin</label>
-        <input id="machineName" required
-          placeholder="Contoh: Mesin Obras">
-
-        <label>Kategori</label>
-        <select id="category">
-          <option>Jahit Utama</option>
-          <option>Obras dan Rajut</option>
-          <option>Pemotongan</option>
-          <option>Finishing</option>
-          <option>Bordir dan Printing</option>
-          <option>Mesin Khusus</option>
-          <option>Pendukung</option>
-          <option>Lainnya</option>
+        <label>Merek Mesin</label>
+        <select id="brand" required>
+          <option value="">Memuat merek...</option>
         </select>
 
-        <label>Merek</label>
-        <input id="brand" placeholder="Contoh: Juki">
+        <label>Kategori Mesin</label>
+        <select id="category" required disabled>
+          <option value="">Pilih merek terlebih dahulu</option>
+        </select>
 
-        <label>Model / Tipe</label>
-        <input id="model" placeholder="Contoh: M600">
+        <label>Model / Tipe Mesin</label>
+        <select id="model" required disabled>
+          <option value="">Pilih kategori terlebih dahulu</option>
+        </select>
+
+        <p id="catalogInfo" class="catalog-info">
+          Pilih merek, kategori, dan model dari katalog.
+        </p>
+
+        <input type="hidden" id="machineName">
 
         <label>Jumlah Mesin</label>
         <input id="quantity" type="number" min="1" value="1" required>

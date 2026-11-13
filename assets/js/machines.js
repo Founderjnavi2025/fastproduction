@@ -6,10 +6,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  const message = document.getElementById("message");
-  const list = document.getElementById("machineList");
-  const form = document.getElementById("machineForm");
-  const saveButton = document.getElementById("saveButton");
+  const $ = id => document.getElementById(id);
+
+  const message = $("message");
+  const list = $("machineList");
+  const form = $("machineForm");
+  const saveButton = $("saveButton");
+
+  const fields = {
+    machine_name: $("machineName"),
+    category: $("category"),
+    brand: $("brand"),
+    model: $("model"),
+    quantity: $("quantity"),
+    machine_condition: $("machineCondition"),
+    notes: $("notes")
+  };
 
   const { data: authData, error: authError } =
     await db.auth.getUser();
@@ -21,23 +33,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const user = authData.user;
 
-  const fields = {
-    machine_name: document.getElementById("machineName"),
-    category: document.getElementById("category"),
-    brand: document.getElementById("brand"),
-    model: document.getElementById("model"),
-    quantity: document.getElementById("quantity"),
-    machine_condition: document.getElementById("machineCondition"),
-    notes: document.getElementById("notes")
-  };
+  let brands = [];
+  let categories = [];
+  let models = [];
+  let editingMachine = null;
 
-  function resetForm() {
-    form.reset();
-    document.getElementById("machineId").value = "";
-    document.getElementById("quantity").value = 1;
-    document.getElementById("formTitle").textContent = "Tambah Mesin";
-    saveButton.textContent = "Simpan Mesin";
-    document.getElementById("cancelEdit").hidden = true;
+  function option(select, value, label) {
+    const el = document.createElement("option");
+    el.value = value;
+    el.textContent = label;
+    select.appendChild(el);
+  }
+
+  function setPlaceholder(select, text) {
+    select.replaceChildren();
+    option(select, "", text);
   }
 
   function conditionLabel(value) {
@@ -46,6 +56,165 @@ document.addEventListener("DOMContentLoaded", async () => {
       perlu_perbaikan: "Perlu Perbaikan",
       rusak: "Rusak"
     }[value] || value;
+  }
+
+  async function loadCatalog() {
+    message.textContent = "Memuat katalog mesin...";
+
+    const results = await Promise.all([
+      db.from("machine_brands")
+        .select("id,name")
+        .order("name"),
+
+      db.from("machine_categories")
+        .select("id,name")
+        .order("name"),
+
+      db.from("machine_models")
+        .select("id,brand_id,category_id,model_name,machine_type,model_level,source_url,verification_status")
+        .order("model_name")
+    ]);
+
+    const errors = results.filter(result => result.error);
+
+    if (errors.length) {
+      message.textContent =
+        "Gagal memuat katalog: " +
+        errors.map(result => result.error.message).join(" | ");
+      return false;
+    }
+
+    brands = results[0].data || [];
+    categories = results[1].data || [];
+    models = results[2].data || [];
+
+    setPlaceholder(fields.brand, "Pilih merek");
+
+    brands.forEach(brand => {
+      option(fields.brand, brand.id, brand.name);
+    });
+
+    setPlaceholder(fields.category, "Pilih merek dahulu");
+    setPlaceholder(fields.model, "Pilih kategori dahulu");
+
+    fields.category.disabled = true;
+    fields.model.disabled = true;
+
+    message.textContent = "";
+    return true;
+  }
+
+  function loadCategories(brandId, selectedCategory = "") {
+    setPlaceholder(fields.category, "Pilih kategori");
+
+    const brandModels = models.filter(
+      item => String(item.brand_id) === String(brandId)
+    );
+
+    const categoryIds = [...new Set(
+      brandModels.map(item => String(item.category_id))
+    )];
+
+    categories
+      .filter(category => categoryIds.includes(String(category.id)))
+      .forEach(category => {
+        option(fields.category, category.id, category.name);
+      });
+
+    fields.category.disabled = !categoryIds.length;
+    setPlaceholder(fields.model, "Pilih kategori dahulu");
+    fields.model.disabled = true;
+
+    if (selectedCategory && categoryIds.includes(String(selectedCategory))) {
+      fields.category.value = String(selectedCategory);
+      loadModels(brandId, selectedCategory);
+    }
+  }
+
+  function loadModels(brandId, categoryId, selectedModel = "") {
+    setPlaceholder(fields.model, "Pilih model");
+
+    const filtered = models.filter(item =>
+      String(item.brand_id) === String(brandId) &&
+      String(item.category_id) === String(categoryId)
+    );
+
+    filtered.forEach(item => {
+      const label = item.model_level === "model"
+        ? item.model_name
+        : `${item.model_name} (${item.model_level})`;
+
+      option(fields.model, item.id, label);
+    });
+
+    fields.model.disabled = !filtered.length;
+
+    if (selectedModel) {
+      fields.model.value = String(selectedModel);
+    }
+
+    updateMachineName();
+  }
+
+  function updateMachineName() {
+    const selected = models.find(
+      item => String(item.id) === String(fields.model.value)
+    );
+
+    const brand = brands.find(
+      item => String(item.id) === String(fields.brand.value)
+    );
+
+    if (!selected || !brand) {
+      fields.machine_name.value = "";
+      $("catalogInfo").textContent =
+        "Pilih merek, kategori, dan model dari katalog.";
+      return;
+    }
+
+    fields.machine_name.value =
+      `${brand.name} ${selected.model_name}`;
+
+    $("catalogInfo").textContent =
+      `${selected.machine_type} · ${selected.model_level} · ${selected.verification_status}`;
+  }
+
+  fields.brand.addEventListener("change", () => {
+    loadCategories(fields.brand.value);
+  });
+
+  fields.category.addEventListener("change", () => {
+    loadModels(fields.brand.value, fields.category.value);
+  });
+
+  fields.model.addEventListener("change", updateMachineName);
+
+  function resetForm() {
+    form.reset();
+
+    $("machineId").value = "";
+    fields.quantity.value = 1;
+
+    editingMachine = null;
+
+    setPlaceholder(fields.brand, "Pilih merek");
+    brands.forEach(brand =>
+      option(fields.brand, brand.id, brand.name)
+    );
+
+    setPlaceholder(fields.category, "Pilih merek dahulu");
+    setPlaceholder(fields.model, "Pilih kategori dahulu");
+
+    fields.category.disabled = true;
+    fields.model.disabled = true;
+
+    fields.machine_name.value = "";
+    $("catalogInfo").textContent =
+      "Pilih merek, kategori, dan model dari katalog.";
+
+    $("formTitle").textContent = "Tambah Mesin";
+    saveButton.textContent = "Simpan Mesin";
+    $("cancelEdit").hidden = true;
   }
 
   async function loadMachines() {
@@ -62,7 +231,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    document.getElementById("machineCount").textContent =
+    $("machineCount").textContent =
       `${data.length} jenis data mesin terdaftar`;
 
     if (!data.length) {
@@ -121,15 +290,45 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function editMachine(machine) {
-    document.getElementById("machineId").value = machine.id;
+    editingMachine = machine;
 
-    Object.entries(fields).forEach(([key, input]) => {
-      input.value = machine[key] ?? "";
-    });
+    $("machineId").value = machine.id;
 
-    document.getElementById("formTitle").textContent = "Edit Mesin";
+    const brand = brands.find(
+      item => item.name === machine.brand
+    );
+
+    const category = categories.find(
+      item => item.name === machine.category
+    );
+
+    const selectedModel = models.find(item =>
+      item.model_name === machine.model &&
+      (!brand || String(item.brand_id) === String(brand.id)) &&
+      (!category || String(item.category_id) === String(category.id))
+    );
+
+    if (!brand || !category || !selectedModel) {
+      message.textContent =
+        "Model lama tidak ditemukan di katalog. Data inventaris belum diubah. Pilih model katalog baru untuk memperbaruinya.";
+      return;
+    }
+
+    fields.brand.value = String(brand.id);
+    loadCategories(brand.id, category.id);
+
+    fields.category.value = String(category.id);
+    loadModels(brand.id, category.id, selectedModel.id);
+
+    fields.quantity.value = machine.quantity;
+    fields.machine_condition.value = machine.machine_condition;
+    fields.notes.value = machine.notes || "";
+
+    $("formTitle").textContent = "Edit Mesin";
     saveButton.textContent = "Perbarui Mesin";
-    document.getElementById("cancelEdit").hidden = false;
+    $("cancelEdit").hidden = false;
+
+    message.textContent = "";
 
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -155,51 +354,76 @@ document.addEventListener("DOMContentLoaded", async () => {
   form.addEventListener("submit", async event => {
     event.preventDefault();
 
-    const id = document.getElementById("machineId").value;
+    const id = $("machineId").value;
+
+    const brand = brands.find(
+      item => String(item.id) === String(fields.brand.value)
+    );
+
+    const category = categories.find(
+      item => String(item.id) === String(fields.category.value)
+    );
+
+    const model = models.find(
+      item => String(item.id) === String(fields.model.value)
+    );
+
+    if (!brand || !category || !model) {
+      message.textContent = "Pilih merek, kategori, dan model yang valid.";
+      return;
+    }
 
     const payload = {
       user_id: user.id,
-      machine_name: fields.machine_name.value.trim(),
-      category: fields.category.value,
-      brand: fields.brand.value.trim() || null,
-      model: fields.model.value.trim() || null,
+      machine_name: `${brand.name} ${model.model_name}`,
+      category: category.name,
+      brand: brand.name,
+      model: model.model_name,
       quantity: Number(fields.quantity.value),
       machine_condition: fields.machine_condition.value,
       notes: fields.notes.value.trim() || null
     };
 
-    if (!payload.machine_name || payload.quantity < 1) {
-      message.textContent = "Periksa nama dan jumlah mesin.";
+    if (!Number.isInteger(payload.quantity) || payload.quantity < 1) {
+      message.textContent = "Jumlah mesin minimal 1.";
       return;
     }
 
     saveButton.disabled = true;
     message.textContent = "Menyimpan data...";
 
-    const result = id
-      ? await db.from("user_machines")
-          .update(payload)
-          .eq("id", id)
-          .eq("user_id", user.id)
-      : await db.from("user_machines").insert(payload);
+    try {
+      const result = id
+        ? await db.from("user_machines")
+            .update(payload)
+            .eq("id", id)
+            .eq("user_id", user.id)
+        : await db.from("user_machines").insert(payload);
 
-    saveButton.disabled = false;
+      if (result.error) {
+        message.textContent = result.error.message;
+        return;
+      }
 
-    if (result.error) {
-      message.textContent = result.error.message;
-      return;
+      message.textContent = id
+        ? "Data mesin berhasil diperbarui."
+        : "Mesin berhasil didaftarkan.";
+
+      resetForm();
+      await loadMachines();
+    } finally {
+      saveButton.disabled = false;
     }
-
-    message.textContent = id
-      ? "Data mesin berhasil diperbarui."
-      : "Mesin berhasil didaftarkan.";
-
-    resetForm();
-    await loadMachines();
   });
 
-  document.getElementById("cancelEdit")
-    .addEventListener("click", resetForm);
+  $("cancelEdit").addEventListener("click", () => {
+    resetForm();
+    message.textContent = "";
+  });
 
-  await loadMachines();
+  const catalogReady = await loadCatalog();
+
+  if (catalogReady) {
+    await loadMachines();
+  }
 });
