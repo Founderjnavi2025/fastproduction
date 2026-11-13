@@ -241,6 +241,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       .order("created_at", { ascending: false });
 
     console.log("SCOPE DEBUG:", { targetUserId, data, error });
+    if (error) {
+      list.textContent = "ERROR SCOPE: " + error.message;
+      return;
+    }
+    if (!data) {
+      list.textContent = "DATA SCOPE NULL";
+      return;
+    }
+    if (!data.length) {
+      list.textContent = "QUERY BERHASIL, TAPI DATA KOSONG";
+      return;
+    }
 
     if (error) {
       list.textContent = "Gagal memuat Scope: " + error.message;
