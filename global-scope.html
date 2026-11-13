@@ -112,6 +112,160 @@
         padding: 15px;
       }
     }
+    
+.global-section {
+  margin-bottom: 32px;
+}
+
+.scope-card-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.scope-card-heading h3 {
+  margin: 0;
+}
+
+.scope-status {
+  font-size: 10px;
+  font-weight: 700;
+  color: #15803d;
+  background: #dcfce7;
+  padding: 5px 9px;
+  border-radius: 20px;
+}
+
+.scope-owner {
+  margin-top: 8px !important;
+}
+
+.scope-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.scope-stat {
+  padding: 12px;
+  background: #f5f7fb;
+  border-radius: 9px;
+  min-width: 0;
+}
+
+.scope-stat strong,
+.scope-stat small {
+  display: block;
+}
+
+.scope-stat strong {
+  font-size: 16px;
+  color: #243b5a;
+  overflow-wrap: anywhere;
+}
+
+.scope-stat small {
+  margin-top: 4px;
+  color: #748094;
+  font-size: 11px;
+}
+
+.scope-jobs-summary {
+  font-size: 12px !important;
+}
+
+.detail-button,
+.publish-button,
+.offer-button,
+.submit-offer {
+  margin: 8px 8px 0 0 !important;
+}
+
+.detail-button {
+  background: #e8eef9 !important;
+  color: #254b83 !important;
+}
+
+.publish-button,
+.offer-button,
+.submit-offer {
+  background: #2563eb !important;
+  color: white !important;
+}
+
+.scope-detail {
+  border-top: 1px solid #e5e9f0;
+  margin-top: 16px;
+  padding-top: 14px;
+}
+
+.scope-detail[hidden],
+.offer-form[hidden] {
+  display: none !important;
+}
+
+.offer-form {
+  padding: 16px;
+  margin-top: 14px;
+  background: #f7f9fc;
+  border: 1px solid #e5e9f0;
+  border-radius: 10px;
+}
+
+.offer-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #dce2eb;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.job-group {
+  border: 1px solid #e0e6ef;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 12px 0;
+}
+
+.job-group legend {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.job-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.job-option {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+}
+
+.offer-item {
+  padding: 14px;
+  margin: 10px 0;
+  border: 1px solid #e5e9f0;
+  border-radius: 9px;
+  background: white;
+}
+
+@media (max-width: 480px) {
+  .scope-stat strong {
+    font-size: 14px;
+  }
+
+  .job-options {
+    grid-template-columns: 1fr;
+  }
+}
+
   </style>
 </head>
 <body>

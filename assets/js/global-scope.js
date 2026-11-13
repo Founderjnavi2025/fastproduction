@@ -9,33 +9,19 @@
 
   const jobGroups = {
     "PERSIAPAN BAHAN": [
-      "Pembuatan pola",
-      "Marker",
-      "Potong bahan",
-      "Fusing"
+      "Pembuatan pola", "Marker", "Potong bahan", "Fusing"
     ],
     "DEKORASI": [
-      "Sablon",
-      "Bordir",
-      "Printing"
+      "Sablon", "Bordir", "Printing"
     ],
     "JAHIT & PERAKITAN": [
-      "Jahit",
-      "Obras",
-      "Kam / Overdeck",
-      "Jahit rantai",
-      "Pasang resleting",
-      "Lubang kancing",
-      "Pasang kancing",
+      "Jahit", "Obras", "Kam / Overdeck", "Jahit rantai",
+      "Pasang resleting", "Lubang kancing", "Pasang kancing",
       "Pasang label"
     ],
     "FINISHING & PENGEMASAN": [
-      "Trimming benang",
-      "Washing",
-      "Setrika / Steam",
-      "Quality Control",
-      "Lipat barang",
-      "Packaging"
+      "Trimming benang", "Washing", "Setrika / Steam",
+      "Quality Control", "Lipat barang", "Packaging"
     ]
   };
 
@@ -54,88 +40,190 @@
 
     const user = data.user;
 
-    function element(tag, text, className) {
+    function el(tag, text, className) {
       const node = document.createElement(tag);
       if (text !== undefined) node.textContent = text;
       if (className) node.className = className;
       return node;
     }
 
-    function button(text, action) {
-      const node = element("button", text);
+    function btn(text, action, className = "") {
+      const node = el("button", text, className);
       node.type = "button";
       node.addEventListener("click", action);
       return node;
     }
 
-    function scopeCard(scope, ownerName) {
-      const card = element("article", undefined, "scope-card");
+    function formatPrice(value) {
+      return "Rp" + Number(value || 0).toLocaleString("id-ID");
+    }
 
-      card.append(
-        element("h3", scope.title),
-        element("p", scope.description || "Tidak ada deskripsi."),
-        element(
-          "p",
-          `${scope.target_qty} pcs · Rp${Number(scope.price_total || 0).toLocaleString("id-ID")}`
-        )
-      );
+    function createCatalogCard(scope, ownerName, isOwner, isPublished) {
+      const card = el("article", undefined, "scope-card catalog-card");
 
-      if (scope.deadline) {
-        card.append(element("p", `Deadline: ${scope.deadline}`));
+      const heading = el("div", undefined, "scope-card-heading");
+      heading.append(el("h3", scope.title));
+
+      if (isPublished) {
+        heading.append(el("span", "OPEN", "scope-status"));
       }
 
-      if (scope.job_desks?.length) {
+      const owner = el(
+        "p",
+        isOwner ? "Scope milik saya" : `Pemilik: ${ownerName || "Pengguna FastProduction"}`,
+        "scope-owner"
+      );
+
+      const stats = el("div", undefined, "scope-stats");
+
+      const qty = el("div", undefined, "scope-stat");
+      qty.append(
+        el("strong", Number(scope.target_qty).toLocaleString("id-ID")),
+        el("small", "Target pcs")
+      );
+
+      const price = el("div", undefined, "scope-stat");
+      price.append(
+        el("strong", formatPrice(scope.price_total)),
+        el("small", "Harga produksi")
+      );
+
+      stats.append(qty, price);
+
+      const deadline = el(
+        "p",
+        scope.deadline ? `Deadline: ${scope.deadline}` : "Deadline belum ditentukan",
+        "scope-deadline"
+      );
+
+      const jobs = el(
+        "p",
+        scope.job_desks?.length
+          ? scope.job_desks.join(" · ")
+          : "Jenis pekerjaan belum ditentukan",
+        "scope-jobs-summary"
+      );
+
+      const detailPanel = el("div", undefined, "scope-detail");
+      detailPanel.hidden = true;
+
+      const detailButton = btn("Lihat Detail", () => {
+        detailPanel.hidden = !detailPanel.hidden;
+        detailButton.textContent = detailPanel.hidden
+          ? "Lihat Detail"
+          : "Tutup Detail";
+
+        if (!detailPanel.hidden && !detailPanel.dataset.loaded) {
+          detailPanel.dataset.loaded = "true";
+          loadDetails(scope, detailPanel, isOwner);
+        }
+      }, "detail-button");
+
+      card.append(heading, owner, stats, deadline, jobs);
+
+      if (isOwner) {
         card.append(
-          element("p", `Pekerjaan: ${scope.job_desks.join(", ")}`)
+          btn(
+            isPublished ? "Tarik Publikasi" : "Terbitkan ke Global Scope",
+            () => togglePublication(scope.id, isPublished),
+            "publish-button"
+          )
         );
       }
 
-      if (ownerName) {
-        card.append(element("p", `Pemilik: ${ownerName}`));
-      }
+      card.append(detailButton, detailPanel);
 
       return card;
     }
 
-    function createOfferForm(scopeId) {
-      const form = element("form", undefined, "offer-form");
+    async function loadDetails(scope, panel, isOwner) {
+      panel.replaceChildren();
 
-      form.append(element("h4", "Ajukan Penawaran"));
-      form.append(
-        element("p", "Ceritakan bagaimana kamu bisa mengerjakan produksi ini.")
+      panel.append(el("h4", "Detail Produksi"));
+      panel.append(
+        el("p", scope.description || "Tidak ada deskripsi tambahan.")
       );
 
-      const textarea = element("textarea");
+      panel.append(
+        el("p", `Target produksi: ${Number(scope.target_qty).toLocaleString("id-ID")} pcs`)
+      );
+
+      panel.append(el("p", `Harga total: ${formatPrice(scope.price_total)}`));
+
+      if (scope.deadline) {
+        panel.append(el("p", `Deadline: ${scope.deadline}`));
+      }
+
+      if (scope.job_desks?.length) {
+        panel.append(
+          el("p", `Pekerjaan: ${scope.job_desks.join(", ")}`)
+        );
+      }
+
+      if (!isOwner) {
+        const formArea = el("div", undefined, "offer-area");
+        const offerButton = btn("Ajukan Penawaran", () => {
+          form.hidden = !form.hidden;
+          offerButton.textContent = form.hidden
+            ? "Ajukan Penawaran"
+            : "Tutup Form Penawaran";
+        }, "offer-button");
+
+        const form = createOfferForm(scope.id);
+        form.hidden = true;
+
+        panel.append(offerButton, form);
+      }
+
+      const offersContainer = el("div", undefined, "offers-container");
+      panel.append(offersContainer);
+
+      await loadOffers(scope.id, offersContainer);
+    }
+
+    function createOfferForm(scopeId) {
+      const form = el("form", undefined, "offer-form");
+
+      form.append(el("h4", "Penawaran Pekerjaan"));
+      form.append(
+        el("p", "Jelaskan kesanggupan dan pengalamanmu mengerjakan produksi ini.")
+      );
+
+      const textarea = el("textarea");
       textarea.name = "message";
-      textarea.placeholder = "Tuliskan penawaran dan pengalamanmu...";
+      textarea.placeholder = "Contoh: Saya siap mengerjakan bagian obras sampai finishing...";
       textarea.required = true;
       textarea.minLength = 5;
       textarea.maxLength = 3000;
       textarea.rows = 4;
 
       form.append(textarea);
-      form.append(element("h4", "Pilih pekerjaan yang kamu tawarkan"));
+      form.append(el("h4", "Pekerjaan yang Saya Tawarkan"));
 
       Object.entries(jobGroups).forEach(([groupName, jobs]) => {
-        const group = element("fieldset", undefined, "job-group");
-        group.append(element("legend", groupName));
+        const group = el("fieldset", undefined, "job-group");
+        group.append(el("legend", groupName));
+
+        const options = el("div", undefined, "job-options");
 
         jobs.forEach(job => {
-          const label = element("label", undefined, "job-option");
-          const checkbox = element("input");
+          const label = el("label", undefined, "job-option");
+          const checkbox = el("input");
+
           checkbox.type = "checkbox";
           checkbox.name = "jobDesk";
           checkbox.value = job;
 
           label.append(checkbox, document.createTextNode(job));
-          group.append(label);
+          options.append(label);
         });
 
+        group.append(options);
         form.append(group);
       });
 
-      const status = element("p", "", "offer-status");
-      const submit = element("button", "Kirim Penawaran");
+      const status = el("p", "", "offer-status");
+      const submit = btn("Kirim Penawaran", () => {}, "submit-offer");
       submit.type = "submit";
 
       form.append(submit, status);
@@ -175,7 +263,7 @@
 
           form.reset();
           status.textContent = "Penawaran berhasil dikirim.";
-          await loadOffers(scopeId, offersContainer);
+
         } catch (error) {
           console.error("Penawaran:", error);
           status.textContent = "Gagal mengirim: " + error.message;
@@ -189,7 +277,7 @@
 
     async function loadOffers(scopeId, target) {
       target.replaceChildren();
-      target.append(element("h4", "Penawaran Pekerja"));
+      target.append(el("h4", "Penawaran Masuk"));
 
       const { data: offers, error } = await window.db
         .from("scope_comments")
@@ -207,32 +295,37 @@
         .eq("scope_id", scopeId)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        target.append(el("p", "Gagal memuat penawaran: " + error.message));
+        return;
+      }
 
       if (!offers?.length) {
-        target.append(element("p", "Belum ada penawaran."));
+        target.append(el("p", "Belum ada penawaran."));
         return;
       }
 
       offers.forEach(offer => {
-        const item = element("article", undefined, "offer-item");
-        const name = offer.commenter?.full_name || "Pengguna FastProduction";
+        const item = el("article", undefined, "offer-item");
 
         item.append(
-          element("strong", name),
-          element("p", offer.message),
-          element(
+          el(
+            "strong",
+            offer.commenter?.full_name || "Pengguna FastProduction"
+          ),
+          el("p", offer.message),
+          el(
             "p",
-            `Pekerjaan ditawarkan: ${(offer.job_desks || []).join(", ") || "-"}`
+            `Pekerjaan: ${(offer.job_desks || []).join(", ")}`
           )
         );
 
         if (offer.commenter?.bio) {
-          item.append(element("p", `Profil: ${offer.commenter.bio}`));
+          item.append(el("p", `Profil: ${offer.commenter.bio}`));
         }
 
         item.append(
-          element(
+          el(
             "small",
             new Date(offer.created_at).toLocaleString("id-ID")
           )
@@ -243,11 +336,11 @@
     }
 
     async function loadScopes() {
-      message.textContent = "Memuat Scope...";
+      message.textContent = "Memuat katalog...";
       container.replaceChildren();
 
-      const ownSection = element("section", undefined, "global-section");
-      ownSection.append(element("h2", "Scope Milik Saya"));
+      const ownSection = el("section", undefined, "global-section");
+      ownSection.append(el("h2", "Scope Milik Saya"));
 
       const { data: ownScopes, error: ownError } = await window.db
         .from("scopes")
@@ -269,31 +362,24 @@
       );
 
       if (!ownScopes?.length) {
-        ownSection.append(element("p", "Belum ada Scope berstatus open."));
+        ownSection.append(el("p", "Belum ada Scope berstatus open."));
       }
 
-      for (const scope of ownScopes || []) {
-        const card = scopeCard(scope);
-        const isPublished = publishedIds.has(scope.id);
-
-        card.append(
-          button(
-            isPublished ? "Tarik Publikasi" : "Terbitkan",
-            () => togglePublication(scope.id, isPublished)
+      (ownScopes || []).forEach(scope => {
+        ownSection.append(
+          createCatalogCard(
+            scope,
+            null,
+            true,
+            publishedIds.has(scope.id)
           )
         );
-
-        const offersContainer = element("div", undefined, "offers-container");
-        card.append(offersContainer);
-        ownSection.append(card);
-
-        await loadOffers(scope.id, offersContainer);
-      }
+      });
 
       container.append(ownSection);
 
-      const globalSection = element("section", undefined, "global-section");
-      globalSection.append(element("h2", "Global Scope"));
+      const globalSection = el("section", undefined, "global-section");
+      globalSection.append(el("h2", "Global Scope"));
 
       const { data: feed, error: feedError } = await window.db
         .from("scope_publications")
@@ -317,32 +403,22 @@
       );
 
       if (!visibleFeed.length) {
-        globalSection.append(
-          element("p", "Belum ada Scope yang diterbitkan.")
-        );
+        globalSection.append(el("p", "Belum ada Scope yang diterbitkan."));
       }
 
-      for (const item of visibleFeed) {
+      visibleFeed.forEach(item => {
         const scope = item.scope;
-        const ownerName =
-          scope.creator?.full_name || "Pengguna FastProduction";
+        const isOwner = scope.creator_id === user.id;
 
-        const card = scopeCard(scope, ownerName);
-
-        if (scope.creator_id !== user.id) {
-          card.append(
-            element("p", scope.creator?.address || "Alamat belum tersedia.")
-          );
-
-          card.append(createOfferForm(scope.id));
-        }
-
-        const offersContainer = element("div", undefined, "offers-container");
-        card.append(offersContainer);
-        globalSection.append(card);
-
-        await loadOffers(scope.id, offersContainer);
-      }
+        globalSection.append(
+          createCatalogCard(
+            scope,
+            scope.creator?.full_name,
+            isOwner,
+            true
+          )
+        );
+      });
 
       container.append(globalSection);
       message.textContent = "Global Scope berhasil dimuat.";
@@ -368,6 +444,7 @@
         if (result.error) throw result.error;
 
         await loadScopes();
+
       } catch (error) {
         console.error("Global Scope:", error);
         message.textContent =
