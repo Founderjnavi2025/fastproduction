@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create Scope · FastProduction</title>
+  <link rel="stylesheet" href="assets/css/app.css">
+
+  <style>
+    body {
+      background: #0b1018;
+      color: #f1f5f9;
+    }
+
+    .scope-container {
+      width: min(650px, calc(100% - 28px));
+      margin: 35px auto;
+    }
+
+    .scope-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+
+    .scope-card {
+      padding: 24px;
+      border: 1px solid #354052;
+      border-radius: 16px;
+      background: #111722;
+    }
+
+    .scope-card label {
+      display: block;
+      margin: 18px 0 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #cbd5e1;
+    }
+
+    .scope-card input,
+    .scope-card textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 13px;
+      border: 1px solid #354052;
+      border-radius: 9px;
+      background: #0b1018;
+      color: #fff;
+      font: inherit;
+    }
+
+    .scope-card textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .scope-card input:focus,
+    .scope-card textarea:focus {
+      outline: 1px solid #c6ff69;
+      border-color: #c6ff69;
+    }
+
+    .scope-submit {
+      width: 100%;
+      margin-top: 24px;
+      padding: 15px;
+      border: 0;
+      border-radius: 9px;
+      background: #c6ff69;
+      color: #101810;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .scope-submit:disabled {
+      opacity: .5;
+      cursor: wait;
+    }
+
+    .scope-back {
+      color: #c6ff69;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .scope-info {
+      color: #94a3b8;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    #message {
+      margin-top: 16px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .success-link {
+      color: #c6ff69;
+      font-weight: 700;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="scope-container">
+
+    <header class="scope-header">
+      <a href="dashboard.html" class="scope-back">← Dashboard</a>
+      <strong>FAST<span style="color:#c6ff69">PRODUCTION</span></strong>
+    </header>
+
+    <section class="scope-card">
+      <div style="color:#c6ff69;font-size:11px;font-weight:800;letter-spacing:2px">
+        PRODUCTION MARKETPLACE
+      </div>
+
+      <h1>Buat Scope</h1>
+
+      <p class="scope-info">
+        Terbitkan kebutuhan produksi dan tampilkan pekerjaanmu
+        di profil FastProduction.
+      </p>
+
+      <form id="scopeForm">
+
+        <label for="title">Judul Pekerjaan</label>
+        <input
+          id="title"
+          type="text"
+          maxlength="150"
+          placeholder="Contoh: Obras kaos 500 pcs"
+          required
+        >
+
+        <label for="description">Deskripsi Pekerjaan</label>
+        <textarea
+          id="description"
+          maxlength="5000"
+          placeholder="Jelaskan jenis pekerjaan, bahan, detail pengerjaan, dan informasi lainnya..."
+        ></textarea>
+
+        <label for="targetQty">Target Produksi (pcs)</label>
+        <input
+          id="targetQty"
+          type="number"
+          min="1"
+          step="1"
+          value="100"
+          required
+        >
+
+        <label for="deadline">Deadline (Opsional)</label>
+        <input id="deadline" type="date">
+
+        <button class="scope-submit" id="submitButton" type="submit">
+          TERBITKAN SCOPE
+        </button>
+      </form>
+
+      <p id="message" role="status"></p>
+    </section>
+
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/logout.js"></script>
+  <script src="assets/js/create-scope.js"></script>
+</body>
+</html>
