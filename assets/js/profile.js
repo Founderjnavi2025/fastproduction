@@ -18,18 +18,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   const currentUser = authData.user;
-  const requestedId = params.get("id");
-
-  const targetUserId = requestedId || currentUser.id;
+  const targetUserId = params.get("id") || currentUser.id;
   const isOwnProfile = targetUserId === currentUser.id;
 
-  const profileEditor = document.getElementById("profileEditor");
-  const profileForm = document.getElementById("profileForm");
+  const editButton = document.getElementById("editProfileButton");
+  editButton.hidden = !isOwnProfile;
 
-  // Tampilkan form edit hanya untuk profil sendiri.
-  profileEditor.hidden = !isOwnProfile;
+  editButton.addEventListener("click", () => {
+    location.href = "edit-profile.html";
+  });
 
-  // TAB
   const machinesTab = document.getElementById("machinesTab");
   const scopesTab = document.getElementById("scopesTab");
   const machinesPanel = document.getElementById("machinesPanel");
@@ -38,7 +36,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   machinesTab.addEventListener("click", () => {
     machinesTab.classList.add("active");
     scopesTab.classList.remove("active");
-
     machinesPanel.hidden = false;
     scopesPanel.hidden = true;
   });
@@ -46,12 +43,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   scopesTab.addEventListener("click", () => {
     scopesTab.classList.add("active");
     machinesTab.classList.remove("active");
-
     scopesPanel.hidden = false;
     machinesPanel.hidden = true;
   });
 
-  // LOAD PROFILE
   const { data: profile, error: profileError } = await db
     .from("profiles")
     .select("id, full_name, bio, address")
@@ -59,13 +54,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     .maybeSingle();
 
   if (profileError || !profile) {
-    message.textContent =
-      profileError?.message || "Profil tidak ditemukan.";
+    message.textContent = profileError?.message || "Profil tidak ditemukan.";
     return;
   }
 
   document.getElementById("profileName").textContent =
     profile.full_name || "Pengguna FastProduction";
+
+  document.getElementById("profileAvatar").textContent =
+    (profile.full_name || "U").trim().charAt(0).toUpperCase();
 
   document.getElementById("profileBio").textContent =
     profile.bio || "Belum ada bio.";
@@ -73,62 +70,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("profileAddress").textContent =
     profile.address || "";
 
-  document.getElementById("fullName").value =
-    profile.full_name || "";
-
-  document.getElementById("bio").value =
-    profile.bio || "";
-
-  document.getElementById("address").value =
-    profile.address || "";
-
-  // EDIT PROFILE SENDIRI
-  if (isOwnProfile) {
-    profileForm.addEventListener("submit", async event => {
-      event.preventDefault();
-
-      message.textContent = "Menyimpan...";
-
-      const updates = {
-        full_name: document.getElementById("fullName").value.trim(),
-        bio: document.getElementById("bio").value.trim(),
-        address: document.getElementById("address").value.trim()
-      };
-
-      if (!updates.full_name) {
-        message.textContent = "Nama tidak boleh kosong.";
-        return;
-      }
-
-      const { error } = await db
-        .from("profiles")
-        .update(updates)
-        .eq("id", currentUser.id);
-
-      if (error) {
-        message.textContent = error.message;
-        return;
-      }
-
-      document.getElementById("profileName").textContent =
-        updates.full_name;
-
-      document.getElementById("profileBio").textContent =
-        updates.bio || "Belum ada bio.";
-
-      document.getElementById("profileAddress").textContent =
-        updates.address || "";
-
-      message.textContent = "Profil berhasil diperbarui.";
-    });
-  }
-
-  // LOAD MACHINES
   async function loadMachines() {
     const list = document.getElementById("machineList");
-
-    list.innerHTML =
-      '<p class="profile-empty">Memuat mesin...</p>';
+    list.innerHTML = '<p class="profile-empty">Memuat mesin...</p>';
 
     const { data, error } = await db
       .from("user_machines")
@@ -137,15 +81,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      list.textContent = "Tidak dapat memuat mesin: " + error.message;
+      list.textContent = "Gagal memuat mesin: " + error.message;
       return;
     }
 
     list.replaceChildren();
 
     if (!data.length) {
-      list.innerHTML =
-        '<p class="profile-empty">Belum ada mesin terdaftar.</p>';
+      list.innerHTML = '<p class="profile-empty">Belum ada mesin terdaftar.</p>';
       return;
     }
 
@@ -154,39 +97,40 @@ document.addEventListener("DOMContentLoaded", async () => {
       card.className = "profile-card";
 
       const title = document.createElement("h3");
-      title.textContent = machine.machine_name;
+      title.textContent = machine.machine_name || "Mesin";
 
       const meta = document.createElement("div");
       meta.className = "profile-meta";
 
       [
         machine.category,
-        `Jumlah: ${machine.quantity}`,
+        `Jumlah: ${machine.quantity ?? 1}`,
         machine.machine_condition
-      ].forEach(value => {
+      ].filter(Boolean).forEach(value => {
         const tag = document.createElement("span");
-        tag.textContent = value || "-";
+        tag.textContent = value;
         meta.appendChild(tag);
       });
 
       const detail = document.createElement("p");
       detail.textContent =
-        `Merek: ${machine.brand || "-"} · Model: ${machine.model || "-"}`;
+        `${machine.brand || "-"} · ${machine.model || "-"}`;
 
-      const notes = document.createElement("p");
-      notes.textContent = machine.notes || "";
+      card.append(title, meta, detail);
 
-      card.append(title, meta, detail, notes);
+      if (machine.notes) {
+        const notes = document.createElement("p");
+        notes.textContent = machine.notes;
+        card.appendChild(notes);
+      }
+
       list.appendChild(card);
     });
   }
 
-  // LOAD SCOPES
   async function loadScopes() {
     const list = document.getElementById("scopeList");
-
-    list.innerHTML =
-      '<p class="profile-empty">Memuat Scope...</p>';
+    list.innerHTML = '<p class="profile-empty">Memuat Scope...</p>';
 
     const { data, error } = await db
       .from("scopes")
@@ -195,8 +139,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      list.textContent =
-        "Data Scope belum tersedia atau belum dapat diakses.";
+      list.textContent = "Gagal memuat Scope.";
       console.error("Load scopes:", error);
       return;
     }
@@ -204,8 +147,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     list.replaceChildren();
 
     if (!data.length) {
-      list.innerHTML =
-        '<p class="profile-empty">Belum ada Scope.</p>';
+      list.innerHTML = '<p class="profile-empty">Belum ada Scope.</p>';
       return;
     }
 
@@ -217,8 +159,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       title.textContent = scope.title || "Tanpa Judul";
 
       const description = document.createElement("p");
-      description.textContent =
-        scope.description || "Tidak ada deskripsi.";
+      description.textContent = scope.description || "Tidak ada deskripsi.";
 
       const meta = document.createElement("div");
       meta.className = "profile-meta";
@@ -240,8 +181,5 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  await Promise.all([
-    loadMachines(),
-    loadScopes()
-  ]);
+  await Promise.all([loadMachines(), loadScopes()]);
 });

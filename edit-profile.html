@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Edit Profil · FastProduction</title>
+  <link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+  <main class="edit-page">
+    <a class="back-link" href="profile.html">← Kembali ke Profil</a>
+
+    <header>
+      <span class="eyebrow">ACCOUNT SETTINGS</span>
+      <h1>Edit Identitas</h1>
+      <p>Perbarui informasi profil FastProduction.</p>
+    </header>
+
+    <form id="profileForm">
+      <label for="fullName">Nama Lengkap</label>
+      <input id="fullName" type="text" required maxlength="100">
+
+      <label for="bio">Bio</label>
+      <textarea id="bio" rows="4" maxlength="500"></textarea>
+
+      <label for="address">Alamat</label>
+      <textarea id="address" rows="3" maxlength="300"></textarea>
+
+      <button id="saveButton" type="submit">Simpan Perubahan</button>
+      <p id="message"></p>
+    </form>
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/edit-profile.js"></script>
+</body>
+</html>

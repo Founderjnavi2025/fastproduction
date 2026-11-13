@@ -5,113 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Profil · FastProduction</title>
   <link rel="stylesheet" href="assets/css/app.css">
-  <style>
-    .profile-page {
-      width: min(100% - 28px, 760px);
-      margin: 30px auto;
-    }
-
-    .profile-section {
-      margin-top: 24px;
-    }
-
-    .profile-tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-
-    .profile-tabs button {
-      flex: 1;
-      opacity: .65;
-    }
-
-    .profile-tabs button.active {
-      opacity: 1;
-      outline: 2px solid currentColor;
-    }
-
-    .profile-card {
-      padding: 16px;
-      margin-bottom: 12px;
-      border: 1px solid rgba(128,128,128,.25);
-      border-radius: 12px;
-    }
-
-    .profile-card h3 {
-      margin-top: 0;
-    }
-
-    .profile-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-      font-size: 13px;
-      opacity: .75;
-    }
-
-    .profile-empty {
-      padding: 24px 12px;
-      text-align: center;
-      opacity: .7;
-    }
-
-    [hidden] {
-      display: none !important;
-    }
-  </style>
 </head>
 <body>
-  <main class="auth-container profile-page">
-    <h1 id="profileName">Profil Pengguna</h1>
-    <p id="profileBio">Memuat profil...</p>
-    <p id="profileAddress"></p>
+  <main class="profile-page">
+    <header class="profile-header">
+      <div class="profile-avatar" id="profileAvatar">U</div>
+      <div class="profile-identity">
+        <h1 id="profileName">Memuat profil...</h1>
+        <p id="profileBio">Memuat informasi pengguna</p>
+        <span id="profileAddress"></span>
+      </div>
+      <button id="editProfileButton" hidden>Edit Profil</button>
+    </header>
 
-    <section id="profileEditor" hidden>
-      <h2>Edit Identitas</h2>
+    <nav class="profile-tabs">
+      <button id="machinesTab" class="active">Mesin</button>
+      <button id="scopesTab">Scope</button>
+    </nav>
 
-      <form id="profileForm">
-        <label for="fullName">Nama Lengkap</label>
-        <input id="fullName" required>
+    <section id="machinesPanel" class="profile-section">
+      <div class="section-heading">
+        <h2>Mesin yang Dimiliki</h2>
+      </div>
+      <div id="machineList">
+        <p class="profile-empty">Memuat mesin...</p>
+      </div>
+    </section>
 
-        <label for="bio">Bio</label>
-        <textarea id="bio" rows="3"></textarea>
-
-        <label for="address">Alamat</label>
-        <textarea id="address" rows="3"></textarea>
-
-        <button type="submit">Simpan Profil</button>
-      </form>
+    <section id="scopesPanel" class="profile-section" hidden>
+      <div class="section-heading">
+        <h2>Scope yang Dibuat</h2>
+      </div>
+      <div id="scopeList">
+        <p class="profile-empty">Memuat Scope...</p>
+      </div>
     </section>
 
     <p id="message"></p>
-
-    <section class="profile-section">
-      <div class="profile-tabs">
-        <button type="button" id="machinesTab" class="active">
-          Mesin
-        </button>
-        <button type="button" id="scopesTab">
-          Scope
-        </button>
-      </div>
-
-      <div id="machinesPanel">
-        <h2>Mesin yang Dimiliki</h2>
-        <div id="machineList">
-          <p class="profile-empty">Memuat mesin...</p>
-        </div>
-      </div>
-
-      <div id="scopesPanel" hidden>
-        <h2>Scope yang Dibuat</h2>
-        <div id="scopeList">
-          <p class="profile-empty">Memuat Scope...</p>
-        </div>
-      </div>
-    </section>
-
-    <p><a href="dashboard.html">← Kembali ke Dashboard</a></p>
+    <a class="back-link" href="dashboard.html">← Kembali ke Dashboard</a>
   </main>
 
   <script src="assets/js/config.js"></script>
