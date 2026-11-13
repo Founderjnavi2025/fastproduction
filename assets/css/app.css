@@ -852,3 +852,33 @@ form {
   min-width: 0;
   white-space: nowrap;
 }
+
+/* DESIGN IMAGE UPLOAD */
+#designImage {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px dashed var(--lime);
+  border-radius: 10px;
+  background: #111510;
+  color: var(--white);
+}
+
+#imagePreviewBox {
+  margin-top: 10px;
+}
+
+#imagePreviewBox img {
+  display: block;
+  width: 100%;
+  max-height: 360px;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #111510;
+  border: 1px solid var(--line);
+}
+
+#imagePreviewBox p {
+  color: var(--muted);
+  font-size: 13px;
+}

@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", async () => {
   const db = window.db;
+  const BUCKET = "design-images";
+  const MAX_SIZE = 5 * 1024 * 1024;
 
   if (!db) {
     location.href = "login.html";
@@ -19,10 +21,61 @@ document.addEventListener("DOMContentLoaded", async () => {
   const titleInput = document.getElementById("designTitle");
   const descriptionInput = document.getElementById("designDescription");
   const imageInput = document.getElementById("designImage");
+  const previewBox = document.getElementById("imagePreviewBox");
+  const preview = document.getElementById("imagePreview");
   const list = document.getElementById("designManagementList");
   const message = document.getElementById("designMessage");
   const saveButton = document.getElementById("saveDesignButton");
   const cancelButton = document.getElementById("cancelEditButton");
+
+  let previewObjectUrl = null;
+
+  function showMessage(text) {
+    message.textContent = text;
+  }
+
+  function getStoragePath(url) {
+    if (!url) return null;
+
+    try {
+      const parsed = new URL(url);
+      const marker = `/storage/v1/object/public/${BUCKET}/`;
+      const index = parsed.pathname.indexOf(marker);
+
+      if (index === -1) return null;
+
+      const path = decodeURIComponent(
+        parsed.pathname.slice(index + marker.length)
+      );
+
+      if (!path.startsWith(`${user.id}/`)) return null;
+
+      return path;
+    } catch {
+      return null;
+    }
+  }
+
+  async function removeImage(url) {
+    const path = getStoragePath(url);
+    if (!path) return;
+
+    const { error } = await db.storage.from(BUCKET).remove([path]);
+
+    if (error) {
+      console.warn("Gagal menghapus gambar lama:", error.message);
+    }
+  }
+
+  function clearPreview() {
+    if (previewObjectUrl) {
+      URL.revokeObjectURL(previewObjectUrl);
+      previewObjectUrl = null;
+    }
+
+    preview.removeAttribute("src");
+    previewBox.hidden = true;
+  }
 
   function resetForm() {
     form.reset();
@@ -30,9 +83,79 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("formTitle").textContent = "Tambah Design";
     saveButton.textContent = "Simpan Design";
     cancelButton.hidden = true;
+    clearPreview();
   }
 
   cancelButton.addEventListener("click", resetForm);
+
+  imageInput.addEventListener("change", () => {
+    clearPreview();
+
+    const file = imageInput.files[0];
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      showMessage("Format gambar harus JPG, PNG, atau WEBP.");
+      imageInput.value = "";
+      return;
+    }
+
+    if (file.size > MAX_SIZE) {
+      showMessage("Ukuran gambar maksimal 5 MB.");
+      imageInput.value = "";
+      return;
+    }
+
+    previewObjectUrl = URL.createObjectURL(file);
+    preview.src = previewObjectUrl;
+    previewBox.hidden = false;
+    showMessage("");
+  });
+
+  function showExistingImage(url) {
+    clearPreview();
+
+    if (!url) return;
+
+    preview.src = url;
+    previewBox.hidden = false;
+  }
+
+  async function uploadImage(file) {
+    const extensions = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/webp": "webp"
+    };
+
+    const extension = extensions[file.type];
+
+    if (!extension) {
+      throw new Error("Format gambar tidak didukung.");
+    }
+
+    if (file.size > MAX_SIZE) {
+      throw new Error("Ukuran gambar maksimal 5 MB.");
+    }
+
+    const path = `${user.id}/${crypto.randomUUID()}.${extension}`;
+
+    const { error: uploadError } = await db.storage
+      .from(BUCKET)
+      .upload(path, file, {
+        contentType: file.type,
+        upsert: false
+      });
+
+    if (uploadError) throw uploadError;
+
+    const { data } = db.storage.from(BUCKET).getPublicUrl(path);
+
+    return {
+      path,
+      url: data.publicUrl
+    };
+  }
 
   async function loadDesigns() {
     list.textContent = "Memuat desain...";
@@ -87,23 +210,34 @@ document.addEventListener("DOMContentLoaded", async () => {
       const edit = document.createElement("button");
       edit.type = "button";
       edit.textContent = "Edit Design";
+
       edit.addEventListener("click", () => {
         idInput.value = design.id;
         titleInput.value = design.title || "";
         descriptionInput.value = design.description || "";
-        imageInput.value = design.image_url || "";
+        imageInput.value = "";
+
         document.getElementById("formTitle").textContent = "Edit Design";
         saveButton.textContent = "Simpan Perubahan";
         cancelButton.hidden = false;
-        form.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        showExistingImage(design.image_url);
+
+        form.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
       });
 
       const remove = document.createElement("button");
       remove.type = "button";
       remove.textContent = "Hapus";
       remove.className = "danger";
+
       remove.addEventListener("click", async () => {
-        if (!confirm("Hapus desain ini?")) return;
+        if (!confirm("Hapus desain ini beserta gambarnya?")) return;
+
+        remove.disabled = true;
 
         const { error } = await db
           .from("user_designs")
@@ -112,11 +246,13 @@ document.addEventListener("DOMContentLoaded", async () => {
           .eq("user_id", user.id);
 
         if (error) {
-          message.textContent = "Gagal menghapus: " + error.message;
+          showMessage("Gagal menghapus: " + error.message);
+          remove.disabled = false;
           return;
         }
 
-        message.textContent = "Design berhasil dihapus.";
+        await removeImage(design.image_url);
+        showMessage("Design berhasil dihapus.");
         await loadDesigns();
       });
 
@@ -128,66 +264,107 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   form.addEventListener("submit", async event => {
     event.preventDefault();
-    message.textContent = "";
+    showMessage("");
 
     const title = titleInput.value.trim();
     const description = descriptionInput.value.trim();
-    const imageUrl = imageInput.value.trim();
+    const file = imageInput.files[0] || null;
+    const editingId = idInput.value;
 
     if (!title) {
-      message.textContent = "Nama desain wajib diisi.";
+      showMessage("Nama desain wajib diisi.");
       return;
     }
 
-    if (imageUrl) {
-      try {
-        const url = new URL(imageUrl);
-        if (!["http:", "https:"].includes(url.protocol)) {
-          throw new Error("URL tidak valid");
-        }
-      } catch {
-        message.textContent = "URL gambar harus berupa alamat HTTP atau HTTPS.";
+    if (file) {
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        showMessage("Format gambar harus JPG, PNG, atau WEBP.");
+        return;
+      }
+
+      if (file.size > MAX_SIZE) {
+        showMessage("Ukuran gambar maksimal 5 MB.");
         return;
       }
     }
 
     saveButton.disabled = true;
+    cancelButton.disabled = true;
     saveButton.textContent = "Menyimpan...";
 
-    const payload = {
-      title,
-      description: description || null,
-      image_url: imageUrl || null,
-      updated_at: new Date().toISOString()
-    };
+    let uploaded = null;
 
-    let result;
+    try {
+      let oldImageUrl = null;
 
-    if (idInput.value) {
-      result = await db
-        .from("user_designs")
-        .update(payload)
-        .eq("id", idInput.value)
-        .eq("user_id", user.id);
-    } else {
-      result = await db
-        .from("user_designs")
-        .insert({ ...payload, user_id: user.id });
+      if (editingId) {
+        const { data: existing, error } = await db
+          .from("user_designs")
+          .select("image_url")
+          .eq("id", editingId)
+          .eq("user_id", user.id)
+          .single();
+
+        if (error) throw error;
+        oldImageUrl = existing.image_url;
+      }
+
+      let imageUrl = oldImageUrl;
+
+      if (file) {
+        uploaded = await uploadImage(file);
+        imageUrl = uploaded.url;
+      }
+
+      const payload = {
+        title,
+        description: description || null,
+        image_url: imageUrl || null,
+        updated_at: new Date().toISOString()
+      };
+
+      let result;
+
+      if (editingId) {
+        result = await db
+          .from("user_designs")
+          .update(payload)
+          .eq("id", editingId)
+          .eq("user_id", user.id);
+      } else {
+        result = await db
+          .from("user_designs")
+          .insert({
+            ...payload,
+            user_id: user.id
+          });
+      }
+
+      if (result.error) throw result.error;
+
+      if (file && oldImageUrl) {
+        await removeImage(oldImageUrl);
+      }
+
+      showMessage("Design berhasil disimpan.");
+      resetForm();
+      await loadDesigns();
+
+    } catch (err) {
+      if (uploaded) {
+        await db.storage.from(BUCKET).remove([uploaded.path]);
+      }
+
+      console.error("SAVE DESIGN ERROR:", err);
+      showMessage("Gagal menyimpan: " + (err.message || err));
+
+    } finally {
+      saveButton.disabled = false;
+      cancelButton.disabled = false;
+      saveButton.textContent = idInput.value
+        ? "Simpan Perubahan"
+        : "Simpan Design";
     }
-
-    saveButton.disabled = false;
-    saveButton.textContent = idInput.value
-      ? "Simpan Perubahan"
-      : "Simpan Design";
-
-    if (result.error) {
-      message.textContent = "Gagal menyimpan: " + result.error.message;
-      return;
-    }
-
-    message.textContent = "Design berhasil disimpan.";
-    resetForm();
-    await loadDesigns();
   });
 
   await loadDesigns();

@@ -29,15 +29,22 @@
         <textarea id="designDescription" rows="4"
           placeholder="Ceritakan detail desain..."></textarea>
 
-        <label for="designImage">URL Gambar</label>
-        <input id="designImage" type="url"
-          placeholder="https://contoh.com/gambar.jpg">
+        <label for="designImage">Foto Design</label>
+        <input
+          id="designImage"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+        >
+
+        <div id="imagePreviewBox" hidden>
+          <p>Preview gambar</p>
+          <img id="imagePreview" alt="Preview Design">
+        </div>
 
         <div class="machine-actions">
           <button type="submit" id="saveDesignButton">Simpan Design</button>
-          <button type="button" id="cancelEditButton" class="secondary" hidden>
-            Batal Edit
-          </button>
+          <button type="button" id="cancelEditButton"
+            class="secondary" hidden>Batal Edit</button>
         </div>
       </form>
 
