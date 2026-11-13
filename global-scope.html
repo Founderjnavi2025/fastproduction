@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Global Scope - FastProduction</title>
+  <link rel="stylesheet" href="assets/css/app.css">
+  <style>
+    .global-container {
+      width: min(1100px, 92%);
+      margin: 30px auto;
+    }
+
+    .global-header {
+      margin-bottom: 28px;
+    }
+
+    .global-section {
+      margin-bottom: 36px;
+    }
+
+    .scope-card {
+      padding: 18px;
+      margin: 16px 0;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .scope-card button {
+      margin-top: 12px;
+      padding: 10px 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="global-container">
+
+    <header class="global-header">
+      <h1>Global Scope</h1>
+      <p>Temukan pekerjaan produksi dari seluruh jaringan FastProduction.</p>
+    </header>
+
+    <section id="scopeMessage">
+      Memuat pekerjaan produksi...
+    </section>
+
+    <div id="scopeList"></div>
+
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/global-scope.js"></script>
+
+</body>
+</html>
