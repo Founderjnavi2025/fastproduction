@@ -6,9 +6,8 @@
 <meta name="theme-color" content="#10120f">
 <title>FastProduction — Dashboard</title>
 <link rel="stylesheet" href="assets/css/app.css">
- <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-
 </head>
 <body>
 <header class="topbar">
@@ -25,7 +24,7 @@
       <h1>Mari terus<br>bergerak.</h1>
       <p>Selamat datang kembali, <strong id="welcomeName">User</strong>.</p>
     </div>
-    <div class="counter" id="slideCounter">01 / 04</div>
+    <div class="counter" id="slideCounter">01 / 05</div>
   </section>
 
   <section class="stage" id="stage">
@@ -79,20 +78,37 @@
       </div>
     </article>
 
-    <article class="slide explore" data-index="3">
+    <article class="slide cv-production" data-index="3">
+      <div class="card-top">
+        <span class="eyebrow">IDENTITAS PENGALAMAN</span>
+        <div class="card-symbol">✳</div>
+      </div>
+      <div class="card-content">
+        <div class="eyebrow">03 — PROFIL KERJA</div>
+        <h2>CV<br>PRODUKSI.</h2>
+        <p>Catat pengalaman mengoperasikan mesin, jenis pekerjaan yang dikuasai, dan perjalananmu di dunia produksi.</p>
+        <a class="card-action" href="cv-produksi.html">BUKA CV PRODUKSI ↗</a>
+      </div>
+      <div class="card-bottom">
+        <span>KEAHLIAN / PENGALAMAN / PORTOFOLIO</span>
+        <strong>04 / EXPERIENCE</strong>
+      </div>
+    </article>
+
+    <article class="slide explore" data-index="4">
       <div class="card-top">
         <span class="eyebrow">JARINGAN TERBUKA</span>
         <div class="card-symbol">⌁</div>
       </div>
       <div class="card-content">
-        <div class="eyebrow">03 — PELUANG</div>
+        <div class="eyebrow">04 — PELUANG</div>
         <h2>AYO<br>PRODUKSI.</h2>
         <p>Temukan pekerjaan, hubungi pemberi pekerjaan, dan ambil bagian dalam jaringan produksi.</p>
         <a class="card-action" href="jobs.html">CARI PEKERJAAN ↗</a>
       </div>
       <div class="card-bottom">
         <span>BEKERJA / TERHUBUNG / BERKARYA</span>
-        <strong>04 / EXPLORE</strong>
+        <strong>05 / EXPLORE</strong>
       </div>
     </article>
   </section>
@@ -101,6 +117,7 @@
     <button class="dot active" aria-label="Identity"></button>
     <button class="dot" aria-label="Activity"></button>
     <button class="dot" aria-label="Machines"></button>
+    <button class="dot" aria-label="CV Production"></button>
     <button class="dot" aria-label="Explore"></button>
   </div>
   <div class="controls">
@@ -120,7 +137,7 @@
 <script src="assets/js/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase.js"></script>
-  <script src="assets/js/logout.js"></script>
+<script src="assets/js/logout.js"></script>
 <script src="assets/js/dashboard.js"></script>
 </body>
 </html>
