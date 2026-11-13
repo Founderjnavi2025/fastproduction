@@ -63,6 +63,18 @@
       border-color: #c6ff69;
     }
 
+    .price-input {
+      font-size: 20px !important;
+      font-weight: 800 !important;
+      color: #c6ff69 !important;
+    }
+
+    .scope-info {
+      color: #94a3b8;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
     .scope-submit {
       width: 100%;
       margin-top: 24px;
@@ -80,27 +92,18 @@
       cursor: wait;
     }
 
-    .scope-back {
+    .scope-back,
+    .success-link {
       color: #c6ff69;
       text-decoration: none;
       font-size: 13px;
-    }
-
-    .scope-info {
-      color: #94a3b8;
-      font-size: 12px;
-      line-height: 1.6;
+      font-weight: 700;
     }
 
     #message {
       margin-top: 16px;
       font-size: 13px;
       line-height: 1.6;
-    }
-
-    .success-link {
-      color: #c6ff69;
-      font-weight: 700;
     }
   </style>
 </head>
@@ -143,7 +146,7 @@
           placeholder="Jelaskan jenis pekerjaan, bahan, detail pengerjaan, dan informasi lainnya..."
         ></textarea>
 
-        <label for="targetQty">Target Produksi (pcs)</label>
+        <label for="targetQty">Jumlah Barang (pcs)</label>
         <input
           id="targetQty"
           type="number"
@@ -152,6 +155,21 @@
           value="100"
           required
         >
+
+        <label for="priceTotal">Harga Total Pengerjaan (Rp)</label>
+        <input
+          id="priceTotal"
+          class="price-input"
+          type="number"
+          min="0"
+          step="1000"
+          placeholder="Contoh: 1500000"
+          required
+        >
+
+        <p class="scope-info">
+          Harga untuk keseluruhan pekerjaan, bukan harga per pcs.
+        </p>
 
         <label for="deadline">Deadline (Opsional)</label>
         <input id="deadline" type="date">
@@ -163,7 +181,6 @@
 
       <p id="message" role="status"></p>
     </section>
-
   </main>
 
   <script src="assets/js/config.js"></script>

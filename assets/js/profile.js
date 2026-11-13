@@ -70,6 +70,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("profileAddress").textContent =
     profile.address || "";
 
+  const rupiah = new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0
+  });
+
   async function loadMachines() {
     const list = document.getElementById("machineList");
     list.innerHTML = '<p class="profile-empty">Memuat mesin...</p>';
@@ -134,12 +140,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const { data, error } = await db
       .from("scopes")
-      .select("id, title, description, target_qty, deadline, status")
+      .select("id, title, description, target_qty, price_total, deadline, status")
       .eq("creator_id", targetUserId)
       .order("created_at", { ascending: false });
 
     if (error) {
-      list.textContent = "Gagal memuat Scope.";
+      list.textContent = "Gagal memuat Scope: " + error.message;
       console.error("Load scopes:", error);
       return;
     }
@@ -159,7 +165,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       title.textContent = scope.title || "Tanpa Judul";
 
       const description = document.createElement("p");
-      description.textContent = scope.description || "Tidak ada deskripsi.";
+      description.textContent =
+        scope.description || "Tidak ada deskripsi.";
+
+      const price = document.createElement("p");
+      price.style.color = "#c6ff69";
+      price.style.fontWeight = "800";
+      price.textContent = scope.price_total !== null
+        ? `Harga total: ${rupiah.format(scope.price_total)}`
+        : "Harga belum ditentukan";
 
       const meta = document.createElement("div");
       meta.className = "profile-meta";
@@ -176,7 +190,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         meta.appendChild(tag);
       });
 
-      card.append(title, description, meta);
+      card.append(title, description, price, meta);
       list.appendChild(card);
     });
   }

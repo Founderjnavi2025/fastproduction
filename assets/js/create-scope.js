@@ -32,6 +32,9 @@
       const targetQty = Number(
         document.getElementById("targetQty").value
       );
+      const priceTotal = Number(
+        document.getElementById("priceTotal").value
+      );
       const deadline = deadlineInput.value || null;
 
       if (!title) {
@@ -40,7 +43,12 @@
       }
 
       if (!Number.isSafeInteger(targetQty) || targetQty < 1) {
-        message.textContent = "Target produksi harus minimal 1 pcs.";
+        message.textContent = "Jumlah barang minimal 1 pcs.";
+        return;
+      }
+
+      if (!Number.isSafeInteger(priceTotal) || priceTotal < 0) {
+        message.textContent = "Harga total tidak valid.";
         return;
       }
 
@@ -53,46 +61,47 @@
       button.textContent = "MENERBITKAN...";
       message.textContent = "";
 
-      const { data: scope, error: insertError } = await window.db
-        .from("scopes")
-        .insert({
-          creator_id: data.user.id,
-          title,
-          description: description || null,
-          target_qty: targetQty,
-          deadline,
-          status: "open"
-        })
-        .select("id")
-        .single();
+      try {
+        const { data: scope, error: insertError } = await window.db
+          .from("scopes")
+          .insert({
+            creator_id: data.user.id,
+            title,
+            description: description || null,
+            target_qty: targetQty,
+            price_total: priceTotal,
+            deadline,
+            status: "open"
+          })
+          .select("id")
+          .single();
 
-      if (insertError) {
-        console.error("Create Scope:", insertError);
-        message.textContent = "Gagal menerbitkan Scope: " + insertError.message;
+        if (insertError) {
+          throw insertError;
+        }
+
+        form.reset();
+        document.getElementById("targetQty").value = 100;
+
+        const success = document.createElement("strong");
+        success.textContent = "Scope berhasil diterbitkan! ";
+
+        const link = document.createElement("a");
+        link.className = "success-link";
+        link.href = "profile.html?id=" + encodeURIComponent(data.user.id);
+        link.textContent = "Lihat profil dan Scope →";
+
+        message.replaceChildren(success, link);
+
+        console.log("Scope berhasil dibuat:", scope.id);
+
+      } catch (error) {
+        console.error("Create Scope:", error);
+        message.textContent = "Gagal menerbitkan Scope: " + error.message;
+      } finally {
         button.disabled = false;
         button.textContent = "TERBITKAN SCOPE";
-        return;
       }
-
-      form.reset();
-      document.getElementById("targetQty").value = 100;
-
-      message.innerHTML = "";
-
-      const success = document.createElement("strong");
-      success.textContent = "Scope berhasil diterbitkan! ";
-
-      const link = document.createElement("a");
-      link.className = "success-link";
-      link.href = "profile.html?id=" + encodeURIComponent(data.user.id);
-      link.textContent = "Lihat profil dan Scope →";
-
-      message.append(success, link);
-
-      button.disabled = false;
-      button.textContent = "TERBITKAN SCOPE";
-
-      console.log("Scope berhasil dibuat:", scope.id);
     });
   }
 
