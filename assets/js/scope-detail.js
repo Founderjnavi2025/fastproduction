@@ -349,25 +349,6 @@
       return;
     }
 
-    const dealByOffer = new Map();
-
-    if (isOwner) {
-      const { data: deals, error: dealError } = await db
-        .from("deals")
-        .select("id, scope_comment_id")
-        .eq("scope_id", scope.id);
-
-      if (dealError) {
-        list.innerHTML =
-          '<div class="empty-note">Deal gagal dimuat: ' +
-          esc(dealError.message) + '</div>';
-        return;
-      }
-
-      (deals || []).forEach(deal => {
-        dealByOffer.set(deal.scope_comment_id, deal.id);
-      });
-    }
 
     list.innerHTML = offers.map(offer => {
       const name = isOwner
@@ -379,101 +360,10 @@
         timeStyle: "short"
       });
 
-      const existingDealId = dealByOffer.get(offer.id);
-
-      const dealButton = isOwner
-        ? existingDealId
-          ? `
-            <a class="submit-offer"
-               href="deal-room.html?id=${encodeURIComponent(existingDealId)}">
-              Buka Room Diskusi
-            </a>
-          `
-          : `
-            <button
-              class="submit-offer start-deal"
-              type="button"
-              data-offer-id="${esc(offer.id)}">
-              Lanjut Diskusi
-            </button>
-            <div class="deal-status" id="dealStatus-${esc(offer.id)}"></div>
-          `
-        : "";
-
-      return `
-        <article class="offer-item">
-          <div class="offer-head">
-            <strong>${esc(name)}</strong>
-            <time>${esc(time)}</time>
-          </div>
-          <p>${esc(offer.message)}</p>
-          ${chips(offer.job_desks)}
-          ${dealButton}
         </article>
       `;
     }).join("");
 
-    if (isOwner) {
-      list.querySelectorAll(".start-deal").forEach(button => {
-        button.addEventListener("click", async () => {
-          await startDeal(scope, button.dataset.offerId, button);
-        });
-      });
-    }
-  }
-
-  async function startDeal(scope, offerId, button) {
-    const status = document.getElementById("dealStatus-" + offerId);
-
-    button.disabled = true;
-    button.textContent = "Membuat Deal...";
-
-    const { data: authData, error: authError } = await db.auth.getUser();
-
-    if (authError || !authData.user) {
-      status.textContent = "Sesi login tidak ditemukan.";
-      button.disabled = false;
-      button.textContent = "Lanjut Diskusi";
-      return;
-    }
-
-    const { data: offer, error: offerError } = await db
-      .from("scope_comments")
-      .select("id, commenter_id")
-      .eq("id", offerId)
-      .eq("scope_id", scope.id)
-      .single();
-
-    if (offerError || !offer) {
-      status.textContent = "Penawaran tidak ditemukan.";
-      button.disabled = false;
-      button.textContent = "Lanjut Diskusi";
-      return;
-    }
-
-    const { error: dealError } = await db
-      .from("deals")
-      .insert({
-        scope_id: scope.id,
-        scope_comment_id: offer.id,
-        owner_id: authData.user.id,
-        worker_id: offer.commenter_id,
-        status: "discussion"
-      });
-
-    if (dealError) {
-      status.textContent = dealError.code === "23505"
-        ? "Deal untuk penawaran ini sudah pernah dibuat."
-        : "Gagal membuat Deal: " + dealError.message;
-
-      button.disabled = false;
-      button.textContent = "Lanjut Diskusi";
-      return;
-    }
-
-    status.textContent = "Deal berhasil dibuat!";
-    await loadOffers(scope, authData.user, true, true);
-  }
 
   init().catch(error => {
     console.error("Scope detail error:", error);
