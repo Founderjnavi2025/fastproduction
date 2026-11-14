@@ -98,6 +98,8 @@
         price_total,
         job_desks,
         created_at,
+        accepted_comment_id,
+        accepted_worker_id,
         creator:profiles!scopes_creator_id_fkey(full_name)
       `)
       .eq("id", scopeId)
@@ -123,12 +125,46 @@
       isPublished = true;
     }
 
-    if (!isOwner && !isPublished) {
+    const isAcceptedWorker = scope.accepted_worker_id === user.id;
+
+    if (!isOwner && !isAcceptedWorker && !isPublished) {
       root.innerHTML = '<div class="empty-note">Scope ini belum dipublikasikan.</div>';
       return;
     }
 
     renderScope(scope, isOwner, isPublished);
+
+    if (isOwner && scope.status === "accepted") {
+      document.getElementById("offerArea").innerHTML = `
+        <section class="detail-section">
+          <h2 class="accent">Survey Pekerja</h2>
+          <p>Penawaran sudah diterima. Scope sedang dalam tahap survey.</p>
+          <button id="reopenScope" type="button">BUKA KEMBALI SCOPE</button>
+          <p id="acceptStatus"></p>
+        </section>
+      `;
+
+      document.getElementById("reopenScope").addEventListener("click", async () => {
+        const button = document.getElementById("reopenScope");
+        const status = document.getElementById("acceptStatus");
+        button.disabled = true;
+        button.textContent = "MEMBUKA KEMBALI...";
+
+        const { error } = await db.rpc("reopen_scope_after_failed_survey", {
+          p_scope_id: scope.id
+        });
+
+        if (error) {
+          status.textContent = "Gagal: " + error.message;
+          button.disabled = false;
+          button.textContent = "BUKA KEMBALI SCOPE";
+          return;
+        }
+
+        window.location.reload();
+      });
+    }
+
     await loadOffers(scope, user, isOwner, isPublished);
   }
 
@@ -333,22 +369,18 @@
     const { data: offers, error } = await query;
 
     if (error) {
-      list.innerHTML =
-        '<div class="empty-note">Penawaran gagal dimuat.</div>';
+      list.innerHTML = '<div class="empty-note">Penawaran gagal dimuat.</div>';
       return;
     }
 
     if (!offers || !offers.length) {
       list.innerHTML = `
         <div class="empty-note">
-          ${isOwner
-            ? "Belum ada penawaran masuk."
-            : "Kamu belum mengajukan penawaran."}
+          ${isOwner ? "Belum ada penawaran masuk." : "Kamu belum mengajukan penawaran."}
         </div>
       `;
       return;
     }
-
 
     list.innerHTML = offers.map(offer => {
       const name = isOwner
@@ -360,6 +392,11 @@
         timeStyle: "short"
       });
 
+      const acceptButton = isOwner && scope.status === "open"
+        ? `<button class="accept-offer" data-comment-id="${esc(offer.id)}" type="button">ACCEPT</button>`
+        : (scope.accepted_comment_id === offer.id
+          ? "<strong>DITERIMA</strong>"
+          : "");
 
       return `
         <article class="offer-item">
@@ -369,10 +406,33 @@
           </div>
           <p>${esc(offer.message)}</p>
           ${chips(offer.job_desks)}
+          ${acceptButton}
         </article>
       `;
     }).join("");
 
+    list.querySelectorAll(".accept-offer").forEach(button => {
+      button.addEventListener("click", async () => {
+        if (!confirm("Terima penawaran ini? Scope akan menjadi privat.")) return;
+
+        button.disabled = true;
+        button.textContent = "MEMPROSES...";
+
+        const { error } = await db.rpc("accept_scope_offer", {
+          p_scope_id: scope.id,
+          p_comment_id: button.dataset.commentId
+        });
+
+        if (error) {
+          alert("Gagal menerima penawaran: " + error.message);
+          button.disabled = false;
+          button.textContent = "ACCEPT";
+          return;
+        }
+
+        window.location.reload();
+      });
+    });
   }
 
   init().catch(error => {
