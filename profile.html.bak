@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="id">
+<head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10120f">
+  <title>Profil · FastProduction</title>
+  <link rel="stylesheet" href="assets/css/app.css">
+
+  <style>
+    /* ==== Tokens, selaras dengan dashboard ==== */
+    :root {
+      --bg: #10120f;
+      --panel: #161a15;
+      --panel-2: #1b211a;
+      --line: #2a3327;
+      --line-strong: #3a4636;
+      --muted: #8b978a;
+      --white: #f1f5ef;
+      --accent: #c6ff69;
+      --accent-dim: #8fb84a;
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: var(--font-display);
+      margin: 0;
+    }
+
+    /* ==== Layout ==== */
+    .profile-page {
+      width: min(880px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 28px 0 90px;
+    }
+
+    /* ==== Header ==== */
+    .profile-header {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 18px;
+      align-items: center;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--panel);
+      margin-bottom: 22px;
+    }
+
+    .profile-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: var(--accent);
+      color: #141a10;
+      font: 700 26px var(--font-display);
+      letter-spacing: -0.5px;
+    }
+
+    .profile-identity h1 {
+      font: 700 24px/1.2 var(--font-display);
+      letter-spacing: -0.5px;
+      margin: 0 0 4px;
+    }
+
+    .profile-identity p {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    #profileAddress {
+      display: inline-block;
+      margin-top: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-dim);
+      letter-spacing: 0.3px;
+    }
+
+    .profile-actions button {
+      padding: 10px 16px;
+      border-radius: 9px;
+      border: 1px solid var(--line-strong);
+      background: transparent;
+      color: var(--white);
+      font: 600 12px var(--font-display);
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .profile-actions button:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ==== TAB BAR ==== */
+    .profile-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 6px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel);
+      margin-bottom: 22px;
+      scrollbar-width: none;
+    }
+    .profile-tabs::-webkit-scrollbar { display: none; }
+
+    .profile-tabs button {
+      flex: 0 0 auto;
+      padding: 11px 16px;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--muted);
+      font: 600 13px var(--font-display);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: 0.15s;
+    }
+
+    .profile-tabs button:hover {
+      color: var(--white);
+      background: var(--panel-2);
+    }
+
+    .profile-tabs button.active {
+      background: var(--accent);
+      color: #141a10;
+    }
+
+    /* ==== Panel / section ==== */
+    .profile-section { margin-top: 8px; }
+    .profile-section[hidden] { display: none; }
+
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .section-heading h2 {
+      font: 700 18px/1.2 var(--font-display);
+      letter-spacing: -0.3px;
+      margin: 0;
+    }
+
+    .section-heading a {
+      color: var(--accent);
+      text-decoration: none;
+      font: 600 12px var(--font-display);
+      padding: 8px 12px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      transition: 0.15s;
+    }
+    .section-heading a:hover {
+      border-color: var(--accent);
+      background: rgba(198,255,105,.08);
+    }
+
+    /* ==== Item list — grid card ==== */
+    .item-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+    }
+
+    .profile-card {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+      transition: 0.15s;
+    }
+    .profile-card:hover { border-color: var(--line-strong); }
+
+    .profile-card strong {
+      display: block;
+      font: 600 14px var(--font-display);
+      color: var(--white);
+      margin-bottom: 6px;
+      letter-spacing: -0.2px;
+    }
+
+    .profile-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .profile-card .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .profile-card .tag {
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: var(--panel-2);
+      color: var(--muted);
+      font: 500 11px var(--font-mono);
+      letter-spacing: 0.2px;
+    }
+
+    .profile-card .tag.accent {
+      background: rgba(198,255,105,.1);
+      color: var(--accent);
+    }
+
+    /* Video: thumbnail 16:9 */
+    .video-thumb {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #0a0d09;
+      aspect-ratio: 16 / 9;
+      margin-bottom: 10px;
+    }
+    .video-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Design: preview 4:3 */
+    .design-thumb {
+      border-radius: 10px;
+      overflow: hidden;
+      background: #0a0d09;
+      aspect-ratio: 4 / 3;
+      margin-bottom: 10px;
+    }
+    .design-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Empty state */
+    .profile-empty {
+      padding: 30px 20px;
+      border: 1px dashed var(--line-strong);
+      border-radius: 12px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    #message {
+      margin-top: 18px;
+      font-size: 13px;
+      color: #fca5a5;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 30px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+    }
+    .back-link:hover { color: var(--accent); }
+
+    /* ==== Mobile ==== */
+    @media (max-width: 560px) {
+      .profile-header { grid-template-columns: auto 1fr; }
+      .profile-actions { grid-column: 1 / -1; }
+      .profile-actions button { width: 100%; }
+      .profile-avatar { width: 54px; height: 54px; font-size: 22px; }
+      .profile-identity h1 { font-size: 20px; }
+      .profile-tabs { border-radius: 12px; }
+      .profile-tabs button { padding: 10px 13px; font-size: 12px; }
+      .item-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="profile-page">
+    <header class="profile-header">
+      <div class="profile-avatar" id="profileAvatar">U</div>
+      <div class="profile-identity">
+        <h1 id="profileName">Memuat profil...</h1>
+        <p id="profileBio">Memuat informasi pengguna</p>
+        <span id="profileAddress"></span>
+      </div>
+      <div class="profile-actions">
+        <button id="editProfileButton" hidden>Edit Profil</button>
+      </div>
+    </header>
+
+    <nav class="profile-tabs" role="tablist" aria-label="Profil">
+      <button id="machinesTab" class="active" role="tab" aria-selected="true">Mesin</button>
+      <button id="scopesTab" role="tab" aria-selected="false">Scope</button>
+      <button id="videosTab" role="tab" aria-selected="false">Video</button>
+      <button id="designsTab" role="tab" aria-selected="false">Design</button>
+    </nav>
+
+    <section id="machinesPanel" class="profile-section" role="tabpanel">
+      <div class="section-heading">
+        <h2>Mesin yang Dimiliki</h2>
+      </div>
+      <div id="machineList" class="item-grid">
+        <p class="profile-empty">Memuat mesin...</p>
+      </div>
+    </section>
+
+    <section id="scopesPanel" class="profile-section" role="tabpanel" hidden>
+      <div class="section-heading">
+        <h2>Scope yang Dibuat</h2>
+      </div>
+      <div id="scopeList" class="item-grid">
+        <p class="profile-empty">Memuat Scope...</p>
+      </div>
+    </section>
+
+    <section id="videosPanel" class="profile-section" role="tabpanel" hidden>
+      <div class="section-heading">
+        <h2>Video Production</h2>
+        <a id="manageVideosLink" href="video-production.html" hidden>
+          Kelola Video
+        </a>
+      </div>
+      <div id="videoList" class="item-grid">
+        <p class="profile-empty">Memuat video...</p>
+      </div>
+    </section>
+
+    <section id="designsPanel" class="profile-section" role="tabpanel" hidden>
+      <div class="section-heading">
+        <h2>Design</h2>
+        <a id="manageDesignsLink" href="design.html" hidden>Kelola Design</a>
+      </div>
+      <div id="designList" class="item-grid">
+        <p class="profile-empty">Memuat desain...</p>
+      </div>
+    </section>
+
+    <p id="message" role="status"></p>
+    <a class="back-link" href="dashboard.html">← Kembali ke Dashboard</a>
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/logout.js"></script>
+  <script src="assets/js/profile.js"></script>
+</body>
+</html>

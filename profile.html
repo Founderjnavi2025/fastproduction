@@ -104,6 +104,23 @@
       color: var(--accent);
     }
 
+    .profile-actions .konveksibos-button {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 10px 16px;
+      border: 1px solid var(--accent);
+      border-radius: 9px;
+      background: var(--accent);
+      color: #141a10;
+      font: 700 12px var(--font-display);
+      text-decoration: none;
+    }
+
+    .profile-actions .konveksibos-button:hover {
+      background: transparent;
+      color: var(--accent);
+    }
+
     /* ==== TAB BAR ==== */
     .profile-tabs {
       display: flex;
@@ -306,6 +323,12 @@
       </div>
       <div class="profile-actions">
         <button id="editProfileButton" hidden>Edit Profil</button>
+        <a class="konveksibos-button"
+           href="https://konveksibos.vercel.app/"
+           target="_blank"
+           rel="noopener noreferrer">
+          Buka KonveksiBos ↗
+        </a>
       </div>
     </header>
 
