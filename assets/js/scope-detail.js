@@ -360,10 +360,20 @@
         timeStyle: "short"
       });
 
+
+      return `
+        <article class="offer-item">
+          <div class="offer-head">
+            <strong>${esc(name)}</strong>
+            <time>${esc(time)}</time>
+          </div>
+          <p>${esc(offer.message)}</p>
+          ${chips(offer.job_desks)}
         </article>
       `;
     }).join("");
 
+  }
 
   init().catch(error => {
     console.error("Scope detail error:", error);
