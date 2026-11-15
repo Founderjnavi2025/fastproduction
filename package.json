@@ -17,6 +17,6 @@
   },
   "homepage": "https://github.com/Founderjnavi2025/fastproduction#readme",
   "dependencies": {
-    "sanitize-html": "^2.18.2"
+    "sanitize-html": "2.17.0"
   }
 }
