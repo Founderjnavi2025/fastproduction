@@ -1,36 +1,79 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Panduan produksi konveksi, mencari mitra jahit, mengelola pesanan, dan membangun bisnis clothing bersama FastProduction.">
-  <title>Journal FastProduction — Panduan Bisnis dan Produksi Konveksi</title>
-  <link rel="canonical" href="https://fastproduction-tvgg.vercel.app/artikel/">
-  <link rel="stylesheet" href="../assets/css/journal.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Panduan produksi konveksi, mencari mitra jahit, mengelola pesanan, dan membangun bisnis clothing bersama FastProduction.">
+<title>Journal FastProduction — Panduan Bisnis dan Produksi Konveksi</title>
+<link rel="canonical" href="https://fastproduction-tvgg.vercel.app/artikel/">
+<link rel="stylesheet" href="../assets/css/journal.css">
 </head>
 <body>
-  <header>
-    <a href="../" class="brand">FastProduction</a>
-    <a href="../">Beranda</a>
-  </header>
+<header>
+<a href="../" class="brand">FastProduction</a>
+<a href="../">Beranda</a>
+</header>
 
-  <main>
-    <p class="eyebrow">FASTPRODUCTION JOURNAL</p>
-    <h1>Wawasan Produksi dan Bisnis Konveksi</h1>
-    <p class="intro">Panduan praktis untuk brand clothing, pemilik konveksi, pekerja produksi, dan mitra industri garmen.</p>
+<main>
+<p class="eyebrow">FASTPRODUCTION JOURNAL</p>
+<h1>Wawasan Produksi dan Bisnis Konveksi</h1>
+<p class="intro">Panduan praktis untuk brand clothing, pemilik konveksi, pekerja produksi, dan mitra industri garmen.</p>
 
-    <article class="article-card">
-      <p class="category">BISNIS KONVEKSI</p>
-      <h2>
-        <a href="cara-mencari-vendor-konveksi.html">
-          Cara Mencari Vendor Konveksi yang Tepat untuk Brand Clothing
-        </a>
-      </h2>
-      <p>Kenali kapasitas produksi, kualitas jahitan, komunikasi, dan sistem kerja sebelum memilih mitra konveksi.</p>
-      <a href="cara-mencari-vendor-konveksi.html">Baca artikel →</a>
-    </article>
-  </main>
+<div id="articleList">
+<p class="intro">Memuat artikel...</p>
+</div>
+</main>
 
-  <footer>© 2026 FastProduction — Production Network Platform</footer>
+<footer>© 2026 FastProduction — Production Network Platform</footer>
+
+<script>
+(async function () {
+  const container = document.getElementById("articleList");
+
+  try {
+    const response = await fetch("/api/articles");
+
+    if (!response.ok) throw new Error("Gagal memuat artikel");
+
+    const articles = await response.json();
+
+    if (!articles.length) {
+      container.innerHTML = '<p class="intro">Belum ada artikel baru. Nantikan panduan berikutnya.</p>';
+      return;
+    }
+
+    container.replaceChildren();
+
+    articles.forEach(article => {
+      const card = document.createElement("article");
+      card.className = "article-card";
+
+      const category = document.createElement("p");
+      category.className = "category";
+      category.textContent = "BISNIS KONVEKSI";
+
+      const heading = document.createElement("h2");
+      const link = document.createElement("a");
+      link.href = "/artikel/" + encodeURIComponent(article.slug);
+      link.textContent = article.title;
+      heading.appendChild(link);
+
+      const description = document.createElement("p");
+      description.textContent =
+        article.meta_description || article.excerpt || "";
+
+      const readLink = document.createElement("a");
+      readLink.href = link.href;
+      readLink.textContent = "Baca artikel →";
+
+      card.append(category, heading, description, readLink);
+      container.appendChild(card);
+    });
+  } catch (error) {
+    container.textContent = "Artikel belum dapat dimuat. Silakan coba kembali.";
+    console.error(error);
+  }
+})();
+</script>
 </body>
 </html>

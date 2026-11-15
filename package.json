@@ -1,0 +1,22 @@
+{
+  "name": "fastproduction",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Founderjnavi2025/fastproduction.git"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Founderjnavi2025/fastproduction/issues"
+  },
+  "homepage": "https://github.com/Founderjnavi2025/fastproduction#readme",
+  "dependencies": {
+    "sanitize-html": "^2.18.2"
+  }
+}
