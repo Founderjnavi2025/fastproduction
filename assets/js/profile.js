@@ -32,14 +32,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     machines: document.getElementById("machinesTab"),
     scopes: document.getElementById("scopesTab"),
     videos: document.getElementById("videosTab"),
-    designs: document.getElementById("designsTab")
+    designs: document.getElementById("designsTab"),
+    labProduction: document.getElementById("labProductionTab")
   };
 
   const panels = {
     machines: document.getElementById("machinesPanel"),
     scopes: document.getElementById("scopesPanel"),
     videos: document.getElementById("videosPanel"),
-    designs: document.getElementById("designsPanel")
+    designs: document.getElementById("designsPanel"),
+    labProduction: document.getElementById("labProductionPanel")
   };
 
   function showTab(name) {
@@ -55,8 +57,100 @@ document.addEventListener("DOMContentLoaded", async () => {
     tabs[name].addEventListener("click", () => showTab(name));
   });
 
+  // Lab Production hanya tersedia di profil pemilik akun yang sedang login.
+  tabs.labProduction.hidden = !isOwnProfile;
+
   document.getElementById("manageVideosLink").hidden = !isOwnProfile;
   document.getElementById("manageDesignsLink").hidden = !isOwnProfile;
+
+  /* ---------- LAB PRODUCTION SSO ---------- */
+
+  const labButton = document.getElementById("openLabProduction");
+  const labStatus = document.getElementById("labProductionStatus");
+
+  if (labButton && labStatus) {
+    labButton.addEventListener("click", async () => {
+      if (!isOwnProfile || labButton.disabled) return;
+
+      // Buka tab lebih awal agar tidak diblokir popup blocker.
+      const popup = window.open("about:blank", "_blank");
+
+      if (!popup) {
+        labStatus.textContent =
+          "Popup diblokir browser. Izinkan popup untuk FastProduction lalu coba lagi.";
+        return;
+      }
+
+      labButton.disabled = true;
+      labButton.textContent = "Menghubungkan...";
+      labStatus.textContent = "Memverifikasi akun FastProduction...";
+
+      try {
+        const { data: sessionData, error: sessionError } =
+          await db.auth.getSession();
+
+        if (sessionError) throw sessionError;
+
+        const accessToken = sessionData.session?.access_token;
+        if (!accessToken) {
+          throw new Error("Sesi FastProduction tidak ditemukan. Silakan login ulang.");
+        }
+
+        labStatus.textContent = "Menghubungkan ke KonveksiBos...";
+
+        // Supabase client otomatis mengirim access token sesi FastProduction.
+        const { data, error } = await db.functions.invoke("fastproduction-sso", {
+          body: {}
+        });
+
+        if (error) {
+          let detail = error.message || "SSO gagal";
+
+          try {
+            const response = await error.context?.json();
+            if (response?.error) detail = response.error;
+          } catch (_) {}
+
+          throw new Error(detail);
+        }
+
+        if (!data?.success || !data?.token_hash || !data?.room_id) {
+          throw new Error(data?.error || "Respons SSO tidak lengkap.");
+        }
+
+        // Token hash dikirim lewat URL fragment agar tidak ikut dikirim ke server web.
+        const handoff = new URLSearchParams({
+          token_hash: data.token_hash,
+          type: data.type || "magiclink",
+          room_id: data.room_id
+        });
+
+        const destination =
+          "https://konveksibos.vercel.app/#sso=" +
+          encodeURIComponent(handoff.toString());
+
+        labStatus.textContent =
+          "Berhasil terhubung. Membuka workspace produksi...";
+
+        popup.location.replace(destination);
+
+      } catch (err) {
+        console.error("LAB PRODUCTION SSO ERROR:", err);
+
+        try {
+          popup.close();
+        } catch (_) {}
+
+        labStatus.textContent =
+          "Gagal membuka Lab Production: " +
+          (err.message || "Kesalahan tidak diketahui");
+
+      } finally {
+        labButton.disabled = false;
+        labButton.textContent = "Masuk Lab Production →";
+      }
+    });
+  }
 
   /* ---------- PROFILE ---------- */
 
