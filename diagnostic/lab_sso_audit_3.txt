@@ -1,0 +1,542 @@
+========== KONVEKSIBOS CLOUD.JS LANJUTAN ==========
+    if (rows.length) {
+      const { error } = await sb.from('workers').upsert(rows);
+      if (error) {
+        console.error('Worker sync:', error.message);
+        return;
+      }
+    }
+
+    let deletion = sb.from('workers').delete().eq('room_id', roomId);
+
+    if (rows.length) {
+      deletion = deletion.not(
+        'id',
+        'in',
+        '(' + rows.map(w => w.id).join(',') + ')'
+      );
+    }
+
+    const { error } = await deletion;
+    if (error) console.error('Worker delete sync:', error.message);
+  }
+
+  async function saveJobs() {
+    if (!roomId) return;
+
+    const jobs = window.KBApp.cloudReady().jobs;
+
+    const rows = jobs.map(j => ({
+      id: j.id,
+      room_id: roomId,
+      product_name: j.product,
+      stage: j.stage || 'monitor',
+      quantity: Number(j.quantity || 0),
+      unit: j.unit || 'pcs',
+      assigned_worker_id: j.workerId || null,
+      details: j
+    }));
+
+    if (rows.length) {
+      const { error } = await sb.from('jobs').upsert(rows);
+      if (error) {
+        console.error('Job sync:', error.message);
+        return;
+      }
+    }
+
+    let deletion = sb.from('jobs').delete().eq('room_id', roomId);
+
+    if (rows.length) {
+      deletion = deletion.not(
+        'id',
+        'in',
+        '(' + rows.map(j => j.id).join(',') + ')'
+      );
+    }
+
+    const { error } = await deletion;
+    if (error) console.error('Job delete sync:', error.message);
+  }
+
+  document.getElementById('kbLogin').onclick = async () => {
+    try {
+      const email = document.getElementById('kbEmail').value.trim();
+      const password = document.getElementById('kbPassword').value;
+
+      const { data, error } = await sb.auth.signInWithPassword({
+        email, password
+      });
+
+      if (error) throw error;
+      await loadWorkspace(data.user);
+    } catch (e) {
+      message(e.message);
+    }
+  };
+
+  document.getElementById('kbRegister').onclick = () => {
+    document.getElementById('kbAuthContent').innerHTML = `
+      <h3>Buat akun KonveksiBos</h3>
+      <input id="kbFullName" placeholder="Nama lengkap" style="width:100%;padding:13px;margin:7px 0;box-sizing:border-box">
+      <input id="kbEmail" type="email" placeholder="Email" style="width:100%;padding:13px;margin:7px 0;box-sizing:border-box">
+      <input id="kbPassword" type="password" placeholder="Password minimal 6 karakter" style="width:100%;padding:13px;margin:7px 0;box-sizing:border-box">
+      <button id="kbDoRegister" style="width:100%;padding:13px;margin-top:10px">Buat Akun</button>
+      <button id="kbBackLogin" style="width:100%;padding:13px;margin-top:8px">Kembali ke Login</button>
+      <p id="kbMessage" style="color:#ffbd70"></p>
+    `;
+
+    document.getElementById('kbBackLogin').onclick = () => location.reload();
+
+    document.getElementById('kbDoRegister').onclick = async () => {
+      try {
+        const fullName = document.getElementById('kbFullName').value.trim();
+        const email = document.getElementById('kbEmail').value.trim();
+        const password = document.getElementById('kbPassword').value;
+
+        if (!fullName || !email || !password) return message('Semua kolom wajib diisi.');
+        if (password.length < 6) return message('Password minimal 6 karakter.');
+
+        message('Sedang membuat akun...');
+
+        const { data, error } = await sb.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: fullName } }
+        });
+
+        if (error) throw error;
+
+        if (data.session) await loadWorkspace(data.user);
+        else message('Akun dibuat. Periksa email untuk konfirmasi, lalu login.');
+      } catch (e) {
+        message(e.message);
+      }
+    };
+  };
+
+  sb.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_OUT') location.reload();
+  });
+
+  try {
+    const { data, error } = await sb.auth.getSession();
+    if (error) throw error;
+
+    if (data.session) {
+      await loadWorkspace(data.session.user);
+    }
+  } catch (e) {
+    message(e.message);
+  }
+})();
+
+========== KONVEKSIBOS INDEX ==========
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f6f8">
+  <title>KonveksiBos — Business Management</title>
+  <link rel="stylesheet" href="assets/css/style.css?v=13">
+
+<style>
+  body.auth-pending .app,
+  body.auth-pending .mobile-nav {
+    display: none !important;
+  }
+</style>
+
+</head>
+<body class="auth-pending">
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">KB</div>
+        <div>
+          <strong>KonveksiBos</strong>
+          <small>Business Workspace</small>
+        </div>
+      </div>
+
+      <div class="nav-label">WORKSPACE</div>
+      <nav class="navigation">
+        <button class="active" data-page="Dashboard">Dashboard</button>
+        <button data-page="Pekerja">Pekerja</button>
+        <button data-page="Pekerjaan">Pekerjaan</button>
+        <button data-page="Monitor">Monitor Gudang</button>
+        <button data-page="Kekurangan">Barang yang Kurang</button>
+      </nav>
+
+      <div class="nav-label">MANAJEMEN</div>
+      <nav class="navigation">
+        <button data-page="Payroll">Payroll</button>
+        <button data-page="Keuangan">Keuangan</button>
+        <button data-page="Laporan">Laporan</button>
+        <button data-page="Kalkulator">Kalkulator Lusin</button>
+      </nav>
+
+      <div class="workspace">
+        <small>WORKSPACE AKTIF</small>
+        <strong>Konveksi Saya</strong>
+        <span>Ruang aktif</span>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>Workspace / <strong id="breadcrumb">Dashboard</strong></div>
+        <div class="profile">
+          <span>01–07 November 2026</span>
+          <b>BB</b>
+        </div>
+      </header>
+
+      <section class="content">
+        <div class="page-heading">
+          <div>
+            <small>BUSINESS OVERVIEW</small>
+            <h1 id="pageTitle">Dashboard</h1>
+            <p id="pageDescription">
+              Pantau aktivitas dan kondisi konveksi dalam satu tempat.
+            </p>
+          </div>
+          <button class="primary" id="mainAction">+ Catat pekerjaan</button>
+        </div>
+
+        <div class="metrics">
+          <article class="metric">
+            <span>Total pekerjaan</span>
+            <strong>—</strong>
+            <p>Menunggu data</p>
+          </article>
+          <article class="metric">
+            <span>Pekerja aktif</span>
+            <strong>—</strong>
+            <p>Menunggu data</p>
+          </article>
+          <article class="metric">
+            <span>Belum disetor</span>
+            <strong>—</strong>
+            <p>Menunggu data</p>
+          </article>
+          <article class="metric">
+            <span>Estimasi payroll</span>
+            <strong>—</strong>
+            <p>Menunggu data</p>
+          </article>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Aktivitas pekerjaan</h2>
+                <p>Ringkasan pekerjaan terbaru</p>
+              </div>
+              <button class="text-button">Lihat semua</button>
+            </div>
+
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Pekerja</th>
+                    <th>Jenis pekerjaan</th>
+                    <th>Jumlah</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td colspan="4">Belum ada aktivitas pekerjaan.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <div class="side-panels">
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <h2>Ringkasan keuangan</h2>
+                  <p>Periode berjalan</p>
+                </div>
+              </div>
+              <div class="finance">
+                <span>Data keuangan belum tersedia.</span>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <h2>Progres pekerjaan</h2>
+                  <p>Status barang saat ini</p>
+                </div>
+              </div>
+              <div class="progress-list">
+                <p>Data progres belum tersedia.</p>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <div class="dashboard-extra">
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Barang sedang dikerjakan</h2>
+                <p>Pekerjaan yang masih dipegang pekerja</p>
+              </div>
+            </div>
+            <div class="owner-active-work"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Catatan kekurangan</h2>
+                <p>Jumlah barang kurang dan umur laporannya</p>
+              </div>
+            </div>
+            <div class="owner-shortages"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="mobile-nav">
+    <button class="active" data-page="Dashboard">Dashboard</button>
+    <button data-page="Pekerja">Pekerja</button>
+    <button data-page="Pekerjaan">Pekerjaan</button>
+    <button data-page="Monitor">Monitor</button>
+
+    <button type="button" id="moreMenuToggle"
+      aria-expanded="false">Lainnya</button>
+
+    <div class="mobile-more-menu" id="mobileMoreMenu" hidden>
+      <button data-page="Kekurangan">Barang yang Kurang</button>
+      <button data-page="Payroll">Payroll</button>
+      <button data-page="Keuangan">Keuangan</button>
+      <button data-page="Laporan">Laporan</button>
+      <button data-page="Kalkulator">Kalkulator Lusin</button>
+    </div>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase.js"></script>
+<script src="assets/js/app.js?v=5"></script>
+<script src="assets/js/cloud.js?v=1"></script>
+</body>
+</html>
+
+========== KONVEKSIBOS SUPABASE CLIENT ==========
+(function () {
+  const SUPABASE_URL = "[REDACTED]";
+  const SUPABASE_ANON_KEY = "[REDACTED]";
+
+  if (!window.supabase) {
+    console.error('Supabase SDK belum dimuat');
+    return;
+  }
+
+  if (
+    SUPABASE_URL ="[REDACTED]"
+    SUPABASE_ANON_KEY ="[REDACTED]"
+  ) {
+    console.warn('Konfigurasi Supabase belum diisi');
+    return;
+  }
+
+  window.sb = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+  console.log('KonveksiBos: Supabase connected');
+})();
+
+========== KONVEKSIBOS EDGE FUNCTIONS ==========
+supabase/functions/admin-create-account/index.ts
+
+========== EDGE FUNCTION CONFIG ==========
+
+========== FASTPRODUCTION DASHBOARD JS ==========
+(() => {
+  const slides = [...document.querySelectorAll(".slide")];
+  const dots = [...document.querySelectorAll(".dot")];
+  const counter = document.getElementById("slideCounter");
+  const stage = document.getElementById("stage");
+  let current = 0;
+  let startX = 0;
+
+  function showSlide(index) {
+    current = (index + slides.length) % slides.length;
+
+    slides.forEach((slide, i) => {
+      slide.classList.remove("active", "before", "after");
+      if (i === current) slide.classList.add("active");
+      else if (i === (current - 1 + slides.length) % slides.length)
+        slide.classList.add("before");
+      else if (i === (current + 1) % slides.length)
+        slide.classList.add("after");
+    });
+
+    dots.forEach((dot, i) => dot.classList.toggle("active", i === current));
+    counter.textContent =
+      String(current + 1).padStart(2, "0") + " / " +
+      String(slides.length).padStart(2, "0");
+  }
+
+  document.getElementById("prev").addEventListener("click", () => showSlide(current - 1));
+  document.getElementById("next").addEventListener("click", () => showSlide(current + 1));
+  dots.forEach((dot, i) => dot.addEventListener("click", () => showSlide(i)));
+
+  stage.addEventListener("touchstart", e => {
+    startX = e.changedTouches[0].screenX;
+  }, { passive: true });
+
+  stage.addEventListener("touchend", e => {
+    const diff = e.changedTouches[0].screenX - startX;
+    if (Math.abs(diff) > 45) showSlide(current + (diff < 0 ? 1 : -1));
+  }, { passive: true });
+
+  stage.addEventListener("mousedown", e => startX = e.screenX);
+  stage.addEventListener("mouseup", e => {
+    const diff = e.screenX - startX;
+    if (Math.abs(diff) > 55) showSlide(current + (diff < 0 ? 1 : -1));
+  });
+
+  showSlide(0);
+
+  async function loadUser() {
+    if (!window.db) {
+      document.getElementById("welcomeName").textContent = "Supabase belum tersedia";
+      return;
+    }
+
+    const { data: { user }, error: authError } = await window.db.auth.getUser();
+
+    if (authError || !user) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    const { data: profile } = await window.db
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const name = profile?.full_name || user.user_metadata?.full_name || "User";
+    const initial = name.trim().charAt(0).toUpperCase() || "U";
+
+    document.getElementById("welcomeName").textContent = name;
+    document.getElementById("memberName").textContent = name.toUpperCase();
+    document.getElementById("profileInitial").textContent = initial;
+    document.getElementById("memberCode").textContent =
+      "FP—" + user.id.replace(/-/g, "").slice(0, 8).toUpperCase();
+
+    const { count, error } = await window.db
+      .from("user_machines")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id);
+
+    if (!error) {
+      const total = count || 0;
+      document.getElementById("machineCount").textContent =
+        total + (total === 1 ? " MACHINE." : " MACHINES.");
+      document.getElementById("machineDescription").textContent =
+        total === 0
+          ? "Belum ada mesin terdaftar. Inventaris produksimu akan tampil di sini."
+          : total + " unit mesin terdaftar dalam inventaris produksimu.";
+    }
+  }
+
+
+
+  loadUser();
+})();
+
+========== FASTPRODUCTION SUPABASE CLIENT ==========
+(() => {
+  const config = window.FASTPRODUCTION_CONFIG;
+
+  if (
+    !config?.SUPABASE_URL ||
+    !config?.SUPABASE_ANON_KEY ||
+    config.SUPABASE_URL.startsWith("ISI_") ||
+    config.SUPABASE_ANON_KEY.startsWith("ISI_")
+  ) {
+    console.error("Konfigurasi Supabase belum valid.");
+    return;
+  }
+
+  if (!window.supabase?.createClient) {
+    console.error("Supabase JS CDN belum tersedia.");
+    return;
+  }
+
+  window.db = window.supabase.createClient(
+    config.SUPABASE_URL,
+    config.SUPABASE_ANON_KEY
+  );
+
+  console.log("FastProduction: Supabase connected.");
+})();
+
+========== FASTPRODUCTION VERCEL CONFIG ==========
+{
+  "rewrites": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    },
+    {
+      "source": "/artikel/:slug",
+      "destination": "/api/article?slug=:slug"
+    }
+  ]
+}
+
+========== FASTPRODUCTION PACKAGE ==========
+{
+  "name": "fastproduction",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Founderjnavi2025/fastproduction.git"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Founderjnavi2025/fastproduction/issues"
+  },
+  "homepage": "https://github.com/Founderjnavi2025/fastproduction#readme",
+  "dependencies": {
+    "sanitize-html": "2.17.0"
+  }
+}
+
+========== LAB / EXTERNAL LINKS ==========
+./profile.html:107:    .profile-actions .konveksibos-button {
+./profile.html:119:    .profile-actions .konveksibos-button:hover {
+./profile.html:326:        <a class="konveksibos-button"
+./profile.html:327:           href="https://konveksibos.vercel.app/"
+./profile.html:330:          Buka KonveksiBos ↗
+./artikel/index.html:8:<link rel="canonical" href="https://fastproduction-tvgg.vercel.app/artikel/">
+./artikel/cara-mencari-vendor-konveksi.html:10:  <meta property="og:url" content="https://fastproduction-tvgg.vercel.app/artikel/cara-mencari-vendor-konveksi.html">
+./artikel/cara-mencari-vendor-konveksi.html:12:  <link rel="canonical" href="https://fastproduction-tvgg.vercel.app/artikel/cara-mencari-vendor-konveksi.html">
+./article-manager.html:214:      "fastproduction-tvgg.vercel.app/artikel/" +
+./api/article.js:70:    url: "https://fastproduction-tvgg.vercel.app/"
+./api/article.js:125:      `https://fastproduction-tvgg.vercel.app/artikel/${article.slug}`;
+./api/sitemap.js:4:const BASE_URL = "https://fastproduction-tvgg.vercel.app";

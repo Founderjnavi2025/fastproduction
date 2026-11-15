@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cek SSO - FastProduction</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #101827;
+  color: #e5e7eb;
+  padding: 20px;
+  max-width: 650px;
+  margin: auto;
+}
+h2 { color: #60a5fa; }
+button {
+  background: #2563eb;
+  color: white;
+  border: 0;
+  padding: 14px 20px;
+  border-radius: 9px;
+  font-size: 16px;
+  width: 100%;
+  margin: 12px 0;
+}
+button:disabled { opacity: .5; }
+pre {
+  background: #020617;
+  padding: 15px;
+  border-radius: 9px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  min-height: 150px;
+}
+.small { color: #9ca3af; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<h2>FastProduction SSO Diagnostic</h2>
+<p class="small">Pengujian koneksi FastProduction ke Edge Function KonveksiBos.</p>
+
+<p id="origin"></p>
+<p id="session">Memeriksa sesi...</p>
+
+<button id="test" disabled>UJI EDGE FUNCTION</button>
+
+<pre id="result">Menyiapkan diagnostic...</pre>
+
+<script src="assets/js/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase.js"></script>
+
+<script>
+(async function () {
+  const result = document.getElementById("result");
+  const sessionText = document.getElementById("session");
+  const button = document.getElementById("test");
+
+  const KB_URL =
+    "https://pbwkjdtqhzmqtcecsjot.supabase.co";
+
+  const KB_ANON =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBid2tqZHRxaHptcXRjZWNzam90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5NjI0NDAsImV4cCI6MjEwOTUzODQ0MH0.22jUMqyd1UoECMGzD1eB9clcHdS-N3gmySRA4yQW-ZM";
+
+  document.getElementById("origin").textContent =
+    "Origin browser: " + location.origin;
+
+  if (!window.db) {
+    sessionText.textContent = "Client Supabase FastProduction gagal dimuat.";
+    result.textContent = "Periksa config.js, supabase.js, dan koneksi CDN.";
+    return;
+  }
+
+  const { data, error } = await window.db.auth.getSession();
+
+  if (error || !data.session?.access_token) {
+    sessionText.textContent = "Sesi FastProduction tidak ditemukan.";
+    result.textContent =
+      "Silakan login ke FastProduction terlebih dahulu, lalu buka cek.html lagi.";
+    return;
+  }
+
+  sessionText.textContent = "Sesi FastProduction tersedia.";
+  button.disabled = false;
+
+  button.addEventListener("click", async () => {
+    button.disabled = true;
+    result.textContent = "Mengirim POST ke Edge Function KonveksiBos...";
+
+    try {
+      const response = await fetch(
+        KB_URL + "/functions/v1/fastproduction-sso",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": KB_ANON,
+            "Authorization": "Bearer " + data.session.access_token
+          },
+          body: JSON.stringify({})
+        }
+      );
+
+      const body = await response.json().catch(() => ({}));
+
+      result.textContent =
+        "HTTP STATUS: " + response.status + "\n" +
+        "HTTP OK: " + response.ok + "\n" +
+        "SUCCESS: " + Boolean(body.success) + "\n" +
+        "TOKEN HASH: " + (body.token_hash ? "DITERIMA" : "TIDAK ADA") + "\n" +
+        "TOKEN TYPE: " + (body.type || "-") + "\n" +
+        "ROOM ID: " + (body.room_id || "-") + "\n" +
+        "ROOM NAME: " + (body.room_name || "-") + "\n" +
+        "ERROR: " + (body.error || "Tidak ada");
+
+    } catch (error) {
+      result.textContent =
+        "FETCH GAGAL\n\n" +
+        error.name + ": " + error.message + "\n\n" +
+        "Periksa origin browser, CORS, dan koneksi jaringan.";
+    } finally {
+      button.disabled = false;
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

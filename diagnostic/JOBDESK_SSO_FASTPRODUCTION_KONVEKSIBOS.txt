@@ -1,0 +1,450 @@
+============================================================
+JOBDESK PROYEK
+SSO FASTPRODUCTION × KONVEKSIBOS
+============================================================
+
+STATUS:
+Belum diimplementasikan.
+Tahap: Perencanaan dan audit arsitektur.
+
+============================================================
+1. TUJUAN UTAMA
+============================================================
+
+Mengintegrasikan FastProduction dengan KonveksiBos melalui
+Single Sign-On (SSO).
+
+Pengguna yang sudah login ke FastProduction dapat membuka
+KonveksiBos melalui menu:
+
+LAB PRODUCTION TOOLS
+
+Pengguna tidak perlu login ulang secara manual ke KonveksiBos.
+
+SSO harus menghasilkan sesi autentikasi KonveksiBos yang sah,
+bukan hanya meneruskan UUID atau email dari FastProduction.
+
+============================================================
+2. SISTEM YANG TERLIBAT
+============================================================
+
+A. FASTPRODUCTION
+- Supabase Auth.
+- Project FastProduction.
+- Pengguna sudah memiliki akun dan sesi login.
+- Dashboard berada di dashboard.html.
+- JavaScript dashboard: assets/js/dashboard.js.
+- Supabase client: assets/js/supabase.js.
+- Global client: window.db.
+- URL aplikasi:
+  https://fastproduction-tvgg.vercel.app
+
+B. KONVEKSIBOS
+- Supabase Auth terpisah dari FastProduction.
+- Project Supabase:
+  pbwkjdtqhzmqtcecsjot
+- URL:
+  https://pbwkjdtqhzmqtcecsjot.supabase.co
+- Halaman utama: index.html.
+- Supabase client: assets/js/supabase.js.
+- Cloud authentication dan workspace:
+  assets/js/cloud.js.
+- Global client: window.sb.
+- Sudah memiliki sistem room/workspace.
+
+C. DATABASE KONVEKSIBOS
+
+Tabel penting:
+- profiles
+- rooms
+- room_members
+- workers
+- jobs
+- payroll
+- sso_identity_links
+
+Tabel sso_identity_links sudah tersedia.
+
+Kolom:
+- id
+- fastproduction_user_id
+- konveksibos_user_id
+- created_at
+
+fastproduction_user_id UNIQUE.
+konveksibos_user_id UNIQUE.
+
+Tabel tersebut belum terbukti digunakan oleh aplikasi.
+
+============================================================
+3. ATURAN IDENTITAS DAN SSO
+============================================================
+
+1. Identitas FastProduction menjadi identitas masuk awal.
+
+2. Token FastProduction harus diverifikasi oleh server
+   menggunakan Supabase Auth FastProduction.
+
+3. Jangan percaya UUID atau email yang dikirim dari browser
+   tanpa verifikasi token.
+
+4. Jangan menganggap UUID kedua project Supabase sama.
+
+5. Jangan menganggap email yang sama otomatis membuktikan
+   kepemilikan akun KonveksiBos.
+
+6. KonveksiBos harus memiliki sesi Auth sendiri.
+
+7. Jangan pernah mengirim service_role key ke frontend.
+
+8. Jangan menaruh secret di HTML atau JavaScript publik.
+
+9. Jangan mengganti password akun lama tanpa persetujuan.
+
+10. Jika email FastProduction belum terverifikasi atau kosong,
+    harus ada penanganan yang aman.
+
+============================================================
+4. ATURAN WORKSPACE PEMILIK
+============================================================
+
+Saat pengguna FastProduction pertama kali membuka
+Lab Production Tools:
+
+- Server memverifikasi identitas FastProduction.
+- Sistem memeriksa sso_identity_links.
+- Jika belum ada tautan, sistem membuat atau menghubungkan
+  identitas KonveksiBos secara aman.
+- Sistem membuat satu workspace milik pengguna jika memang
+  belum mempunyai workspace yang terhubung.
+- Pengguna masuk sebagai pemilik workspace.
+
+Saat pengguna membuka Lab berikutnya:
+
+- Gunakan identitas KonveksiBos yang sama.
+- Gunakan workspace yang sama.
+- Jangan membuat room baru.
+- Jangan menghapus atau mengosongkan data.
+- Jangan mengulang migrasi data secara sembarangan.
+
+Data yang wajib tetap tersimpan:
+- Pekerja.
+- Pekerjaan.
+- Payroll.
+- Riwayat produksi.
+- Data workspace lainnya.
+
+============================================================
+5. ATURAN GUEST DAN BERBAGI WORKSPACE
+============================================================
+
+Contoh:
+
+Bambang memiliki akun FastProduction dan workspace
+KonveksiBos miliknya.
+
+Dilraba Dilmurat membuka tautan workspace Bambang.
+
+Hasil yang diharapkan:
+- Bambang tetap OWNER.
+- Dilraba masuk sebagai GUEST.
+- Guest hanya boleh melihat data yang diizinkan.
+- Guest tidak boleh mengubah atau menghapus data.
+- Guest tidak boleh mengambil alih kepemilikan room.
+
+Pemilik dapat mengundang pengguna dan memberikan
+tingkat akses sesuai sistem izin yang dirancang.
+
+CATATAN:
+Guest merupakan fitur akses berbagi room, bukan mekanisme
+SSO pemilik.
+
+Skema room_members saat ini memiliki role:
+owner, admin, gudang, obras, jahit, kam, kancing.
+
+Role guest/editor/user belum tersedia pada constraint
+yang teridentifikasi.
+
+Jangan menambahkan role baru tanpa memeriksa seluruh
+RLS policy dan fungsi database.
+
+============================================================
+6. ARSITEKTUR YANG DIHARAPKAN
+============================================================
+
+Alur:
+
+1. Pengguna login ke FastProduction.
+2. Pengguna membuka Lab Production Tools.
+3. Browser mengambil sesi/token FastProduction.
+4. Browser mengirim token ke Edge Function KonveksiBos.
+5. Edge Function memvalidasi token ke Supabase FastProduction.
+6. Server mencari mapping pada sso_identity_links.
+7. Jika belum ada mapping, server melakukan provisioning
+   identitas KonveksiBos dengan aman.
+8. Server memastikan workspace pemilik tersedia.
+9. Server menghasilkan mekanisme pertukaran sesi KonveksiBos
+   yang aman dan hanya dapat digunakan oleh pemilik identitas.
+10. Browser memperoleh sesi Supabase KonveksiBos.
+11. KonveksiBos memuat workspace yang tepat.
+12. Pengguna masuk tanpa login manual.
+
+Perlu dirancang mekanisme:
+- Pencegahan replay token.
+- Validasi origin dan CORS.
+- Penanganan permintaan berulang/idempotency.
+- Penanganan kegagalan provisioning.
+- Pencegahan akun ganda.
+- Keamanan magic link/token exchange.
+- Penanganan akun KonveksiBos lama.
+
+Jangan menganggap rancangan pertukaran sesi sudah final
+sebelum memeriksa API Supabase yang benar.
+
+============================================================
+7. KONDISI KODE SAAT INI
+============================================================
+
+FASTPRODUCTION:
+
+dashboard.html sudah memiliki 5 slide.
+Belum ada menu Lab Production Tools di dashboard.
+
+dashboard.js:
+- Mengambil user melalui window.db.auth.getUser().
+- Mengambil profil pengguna.
+- Menampilkan nama dan kode member.
+- Menghitung inventaris mesin.
+
+profile.html sudah memiliki tombol lama:
+"Buka KonveksiBos"
+dengan URL:
+https://konveksibos.vercel.app/
+
+KONVEKSIBOS:
+
+index.html memuat:
+- Supabase JS CDN.
+- assets/js/supabase.js.
+- assets/js/app.js.
+- assets/js/cloud.js.
+
+cloud.js:
+- Membuat panel login manual.
+- Mendukung login email/password.
+- Mendukung registrasi.
+- Memeriksa session KonveksiBos.
+- Mengambil memberships.
+- Menampilkan pilihan workspace.
+- Mengaktifkan room.
+- Mengambil data workers dan jobs.
+- Memiliki fungsi saveWorkers dan saveJobs.
+
+Cloud.js harus dimodifikasi dengan hati-hati.
+Jangan merusak login manual yang sudah berfungsi.
+
+============================================================
+8. KONDISI DATABASE DAN SECURITY
+============================================================
+
+- sso_identity_links sudah ada.
+- Tabel tersebut belum terbukti digunakan.
+- RLS aktif pada sejumlah tabel.
+- Fungsi is_room_member, is_room_admin, is_room_owner
+  sudah tersedia.
+- Fungsi handle_new_room_owner tersedia.
+- Trigger on_room_created memanggil handle_new_room_owner.
+- Perlu memeriksa kemungkinan duplikasi insert owner
+  karena admin-create-account juga melakukan insert
+  room_members secara manual.
+- Edge Function admin-create-account sudah ada.
+- Fungsi tersebut menggunakan service role di server.
+- Service role tidak boleh bocor ke browser.
+
+Periksa seluruh policy sebelum mengubah role atau izin.
+
+============================================================
+9. LARANGAN PERUBAHAN
+============================================================
+
+JANGAN:
+- Menghapus tabel.
+- Menghapus room lama.
+- Menghapus pekerja atau pekerjaan.
+- Menghapus payroll.
+- Mengosongkan data produksi.
+- Mengganti UUID pengguna sembarangan.
+- Membuat workspace baru setiap klik.
+- Mengubah role tanpa audit RLS.
+- Menaruh service role key di frontend.
+- Menghapus file lama tanpa backup.
+- Menimpa schema_remote.sql atau schema.sql.
+- Mengubah sistem login manual tanpa alasan dan pengujian.
+
+Semua perubahan file harus memiliki backup terlebih dahulu.
+
+============================================================
+10. KRITERIA SELESAI
+============================================================
+
+SSO dianggap berhasil apabila:
+
+[ ] Pengguna FastProduction yang login dapat membuka Lab.
+[ ] Tidak perlu login manual ke KonveksiBos.
+[ ] KonveksiBos memiliki sesi Auth yang sah.
+[ ] Pengguna pertama kali memperoleh workspace sendiri.
+[ ] Klik berikutnya membuka workspace yang sama.
+[ ] Data pekerja tidak hilang.
+[ ] Data pekerjaan tidak hilang.
+[ ] Payroll dan riwayat tetap ada.
+[ ] Pengguna lain tidak otomatis menjadi pemilik.
+[ ] Guest tidak dapat mengedit data.
+[ ] Login manual KonveksiBos tetap berfungsi.
+[ ] Logout ditangani dengan benar.
+[ ] Tidak ada secret yang bocor ke frontend.
+[ ] Tidak ada room duplikat akibat request berulang.
+[ ] RLS tetap membatasi akses antar-room.
+
+============================================================
+11. TUGAS AUDIT UNTUK AI
+============================================================
+
+Lakukan audit terhadap jobdesk dan hasil diagnostik kode
+yang diberikan pengguna.
+
+Jangan langsung menulis implementasi.
+
+Jawab hal berikut:
+
+1. Apakah rancangan SSO ini aman dan realistis?
+2. Apakah skema database saat ini cukup?
+3. Apakah sso_identity_links perlu diperbaiki?
+4. Bagaimana cara provisioning akun KonveksiBos yang aman?
+5. Bagaimana cara membuat sesi KonveksiBos tanpa password
+   manual dan tanpa mengekspos service role?
+6. Bagaimana menangani pengguna yang sudah punya akun
+   KonveksiBos?
+7. Bagaimana menjamin workspace hanya dibuat satu kali?
+8. Bagaimana menerapkan guest read-only melalui RLS?
+9. Apakah struktur cloud.js mendukung integrasi ini?
+10. File dan database apa saja yang perlu diubah?
+11. Urutan implementasi paling aman seperti apa?
+12. Apa potensi konflik atau bug yang belum terdeteksi?
+
+Jika ada asumsi yang belum terbukti, tandai sebagai
+BELUM DIKETAHUI. Jangan mengarang kondisi database.
+
+Prioritaskan keamanan, konsistensi identitas, dan
+keutuhan data produksi.
+
+============================================================
+AKHIR JOBDESK
+============================================================
+
+============================================================
+12. TEMUAN AUDIT TAMBAHAN — 15 NOVEMBER 2026
+============================================================
+
+A. KONVEKSIBOS SUPABASE CLIENT
+
+File assets/js/supabase.js sudah memiliki pemeriksaan
+konfigurasi dan membuat window.sb.
+
+Hasil audit terbaru menunjukkan file tersebut normal.
+Tampilan kondisi if yang sebelumnya tampak rusak merupakan
+efek proses redaksi diagnostik.
+
+Jangan mengubah file ini tanpa kebutuhan yang jelas.
+
+B. FASTPRODUCTION AUTH
+
+File assets/js/dashboard.js menggunakan:
+
+window.db.auth.getUser()
+
+Identitas user dapat diperoleh dari sesi FastProduction.
+Belum ada implementasi pengiriman token ke KonveksiBos.
+
+C. LINK KONVEKSIBOS LAMA
+
+File profile.html sudah memiliki tombol:
+
+Buka KonveksiBos
+
+Saat ini tombol mengarah ke:
+https://konveksibos.vercel.app/
+
+Tombol tersebut masih berupa navigasi biasa dan membuka
+tab baru. Belum menerapkan SSO.
+
+D. EDGE FUNCTION ADMIN LAMA
+
+File:
+supabase/functions/admin-create-account/index.ts
+
+Temuan:
+- Menggunakan service role di server.
+- Memverifikasi caller melalui auth.getUser().
+- Hanya super_admin yang diizinkan.
+- Membuat user, profile, room, dan membership.
+- CORS masih menggunakan wildcard (*).
+- Melakukan profiles.insert setelah createUser.
+- Melakukan room_members.insert setelah membuat room.
+- Rollback menghapus profile dan auth user jika gagal.
+- Rollback belum secara eksplisit menghapus room yang
+  mungkin sudah berhasil dibuat.
+
+E. TRIGGER DATABASE
+
+Fungsi handle_new_room_owner():
+
+- Otomatis memasukkan owner ke room_members.
+- Menggunakan ON CONFLICT (room_id, user_id) DO NOTHING.
+
+Implikasi:
+Edge Function admin-create-account juga memasukkan owner
+secara manual. Periksa apakah insert manual tersebut
+sebenarnya masih diperlukan.
+
+Fungsi handle_new_user():
+
+- Memasukkan data ke profiles berdasarkan auth.users.
+- Perlu periksa apakah trigger yang memanggil fungsi ini
+  benar-benar aktif pada database saat ini.
+
+Jika trigger aktif, profiles.insert manual di
+admin-create-account berpotensi konflik.
+
+Jangan mengasumsikan trigger aktif hanya karena fungsi
+tersedia di schema.
+
+F. SSO BELUM ADA
+
+Belum ditemukan:
+- Edge Function fastproduction-sso.
+- Pertukaran token FastProduction ke sesi KonveksiBos.
+- Integrasi tombol Lab Production Tools.
+- Provisioning identitas otomatis.
+- Mekanisme guest read-only.
+
+============================================================
+13. TUGAS AUDITOR TAMBAHAN
+============================================================
+
+Audit khusus temuan terbaru:
+
+1. Periksa trigger auth.users yang memanggil handle_new_user.
+2. Periksa constraint profiles.id dan kemungkinan konflik.
+3. Periksa apakah insert room_members manual diperlukan.
+4. Periksa konsistensi rollback provisioning.
+5. Periksa constraint unik sso_identity_links.
+6. Periksa RLS dan akses langsung terhadap tabel SSO.
+7. Rancang SSO terpisah dari admin-create-account.
+8. Tentukan apakah tombol lama di profile.html akan
+   diarahkan ke alur SSO atau tetap dipertahankan.
+9. Pastikan integrasi baru tidak mengganggu login manual.
+10. Jangan melakukan perubahan database atau file sebelum
+    rancangan final disetujui.
+
+Akhir temuan audit tambahan.
+============================================================

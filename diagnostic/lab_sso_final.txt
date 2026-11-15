@@ -1,0 +1,343 @@
+========== KB SUPABASE CLIENT (REDACTED) ==========
+(function () {
+  const SUPABASE_URL = "[REDACTED]";
+  const SUPABASE_ANON_KEY = "[REDACTED]";
+
+  if (!window.supabase) {
+    console.error('Supabase SDK belum dimuat');
+    return;
+  }
+
+  if (
+    SUPABASE_URL === 'ISI_PROJECT_URL' ||
+    SUPABASE_ANON_KEY === 'ISI_PUBLISHABLE_OR_ANON_KEY'
+  ) {
+    console.warn('Konfigurasi Supabase belum diisi');
+    return;
+  }
+
+  window.sb = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+  console.log('KonveksiBos: Supabase connected');
+})();
+
+
+========== KB ADMIN EDGE FUNCTION ==========
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const cors = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+const response = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...cors, "Content-Type": "application/json" },
+  });
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
+  if (req.method !== "POST") return response({ error: "Method not allowed" }, 405);
+
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const anon = Deno.env.get("SUPABASE_ANON_KEY")!;
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  const token = req.headers.get("Authorization")?.replace("Bearer ", "");
+  if (!token) return response({ error: "Unauthorized" }, 401);
+
+  const admin = createClient(url, serviceKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+
+  const caller = createClient(url, anon, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+
+  const { data: authData, error: authError } = await caller.auth.getUser();
+  if (authError || !authData.user) return response({ error: "Session tidak valid" }, 401);
+
+  const { data: profile, error: profileError } = await admin
+    .from("profiles")
+    .select("platform_role")
+    .eq("id", authData.user.id)
+    .maybeSingle();
+
+  if (profileError || profile?.platform_role !== "super_admin") {
+    return response({ error: "Akses Super Admin diperlukan" }, 403);
+  }
+
+  let userId: string | null = null;
+
+  try {
+    const body = await req.json();
+    const fullName = String(body.full_name || "").trim();
+    const email = String(body.email || "").trim().toLowerCase();
+    const password = String(body.password || "");
+    const businessName = String(body.business_name || "").trim();
+
+    if (!fullName || !email || !businessName || password.length < 8) {
+      return response({ error: "Lengkapi semua data. Password minimal 8 karakter." }, 400);
+    }
+
+    const { data: created, error: createError } = await admin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { full_name: fullName },
+    });
+
+    if (createError) throw createError;
+    userId = created.user.id;
+
+    const { error: insertProfileError } = await admin.from("profiles").insert({
+      id: userId,
+      full_name: fullName,
+      platform_role: "user",
+    });
+
+    if (insertProfileError) throw insertProfileError;
+
+    const { data: room, error: roomError } = await admin
+      .from("rooms")
+      .insert({ owner_id: userId, name: businessName, status: "active" })
+      .select("id,name")
+      .single();
+
+    if (roomError) throw roomError;
+
+    const { error: memberError } = await admin.from("room_members").insert({
+      room_id: room.id,
+      user_id: userId,
+      role: "owner",
+    });
+
+    if (memberError) throw memberError;
+
+    return response({
+      success: true,
+      message: "Akun dan workspace berhasil dibuat.",
+      user: { id: userId, email },
+      workspace: room,
+    });
+  } catch (error) {
+    if (userId) {
+      await admin.from("profiles").delete().eq("id", userId);
+      await admin.auth.admin.deleteUser(userId);
+    }
+    return response({ error: error.message || "Gagal membuat akun." }, 400);
+  }
+});
+
+========== SSO TABLE AND ROOM TRIGGER SCHEMA ==========
+153-END;
+154-$$;
+155-
+156-
+157---
+158--- Name: handle_new_room_owner(); Type: FUNCTION; Schema: public; Owner: -
+159---
+160-
+161:CREATE FUNCTION public.handle_new_room_owner() RETURNS trigger
+162-    LANGUAGE plpgsql SECURITY DEFINER
+163-    SET search_path TO 'public'
+164-    AS $$
+165-begin
+166-  insert into public.room_members (room_id, user_id, role)
+167-  values (new.id, new.owner_id, 'owner')
+168-  on conflict (room_id, user_id) do nothing;
+169-
+170-  return new;
+171-end;
+172-$$;
+173-
+174-
+175---
+176--- Name: handle_new_user(); Type: FUNCTION; Schema: public; Owner: -
+177---
+178-
+179:CREATE FUNCTION public.handle_new_user() RETURNS trigger
+180-    LANGUAGE plpgsql SECURITY DEFINER
+181-    SET search_path TO ''
+182-    AS $$
+183-begin
+184-    insert into public.profiles (id, full_name)
+185-    values (
+186-        new.id,
+187-        coalesce(new.raw_user_meta_data ->> 'full_name', '')
+188-    );
+189-
+190-    return new;
+191-end;
+192-$$;
+193-
+194-
+195---
+196--- Name: is_demo_active(); Type: FUNCTION; Schema: public; Owner: -
+197---
+198-
+199-CREATE FUNCTION public.is_demo_active() RETURNS boolean
+200-    LANGUAGE sql STABLE SECURITY DEFINER
+201-    SET search_path TO ''
+202-    AS $$
+203-    SELECT
+204-      NOT EXISTS (
+205-        SELECT 1
+206-        FROM public.demo_accounts d
+207-        WHERE d.user_id = (SELECT auth.uid())
+208-      )
+209-      OR EXISTS (
+210-        SELECT 1
+211-        FROM public.demo_accounts d
+212-        WHERE d.user_id = (SELECT auth.uid())
+213-          AND d.expires_at > NOW()
+214-      );
+--
+428-    CONSTRAINT profiles_platform_role_check CHECK ((platform_role = ANY (ARRAY['user'::text, 'super_admin'::text])))
+429-);
+430-
+431-
+432---
+433--- Name: room_members; Type: TABLE; Schema: public; Owner: -
+434---
+435-
+436:CREATE TABLE public.room_members (
+437-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+438-    room_id uuid NOT NULL,
+439-    user_id uuid NOT NULL,
+440-    role text DEFAULT 'gudang'::text NOT NULL,
+441-    created_at timestamp with time zone DEFAULT now(),
+442-    CONSTRAINT room_members_role_check CHECK ((role = ANY (ARRAY['owner'::text, 'admin'::text, 'gudang'::text, 'obras'::text, 'jahit'::text, 'kam'::text, 'kancing'::text])))
+443-);
+444-
+445-
+446---
+447--- Name: rooms; Type: TABLE; Schema: public; Owner: -
+448---
+449-
+450:CREATE TABLE public.rooms (
+451-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+452-    owner_id uuid NOT NULL,
+453-    name text NOT NULL,
+454-    status text DEFAULT 'active'::text NOT NULL,
+455-    created_at timestamp with time zone DEFAULT now(),
+456-    updated_at timestamp with time zone DEFAULT now(),
+457-    CONSTRAINT rooms_status_check CHECK ((status = ANY (ARRAY['active'::text, 'suspended'::text])))
+458-);
+459-
+460-
+461---
+462--- Name: sso_identity_links; Type: TABLE; Schema: public; Owner: -
+463---
+464-
+465:CREATE TABLE public.sso_identity_links (
+466-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+467-    fastproduction_user_id uuid NOT NULL,
+468-    konveksibos_user_id uuid NOT NULL,
+469-    created_at timestamp with time zone DEFAULT now() NOT NULL
+470-);
+471-
+472-
+473---
+474--- Name: workers; Type: TABLE; Schema: public; Owner: -
+475---
+476-
+477-CREATE TABLE public.workers (
+478-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+479-    room_id uuid NOT NULL,
+480-    name text NOT NULL,
+481-    role text DEFAULT 'obras'::text,
+482-    phone text,
+483-    rate_per_dozen numeric(14,2) DEFAULT 0,
+484-    rate_per_piece numeric(14,2) DEFAULT 0,
+485-    is_active boolean DEFAULT true,
+486-    notes text,
+487-    details jsonb DEFAULT '{}'::jsonb,
+488-    created_at timestamp with time zone DEFAULT now(),
+489-    updated_at timestamp with time zone DEFAULT now()
+490-);
+491-
+492-
+493---
+494--- Name: demo_accounts demo_accounts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+495---
+496-
+497-ALTER TABLE ONLY public.demo_accounts
+498-    ADD CONSTRAINT demo_accounts_pkey PRIMARY KEY (user_id);
+499-
+500-
+
+========== FASTPRODUCTION EXISTING KB BUTTON ==========
+    .back-link:hover { color: var(--accent); }
+
+    /* ==== Mobile ==== */
+    @media (max-width: 560px) {
+      .profile-header { grid-template-columns: auto 1fr; }
+      .profile-actions { grid-column: 1 / -1; }
+      .profile-actions button { width: 100%; }
+      .profile-avatar { width: 54px; height: 54px; font-size: 22px; }
+      .profile-identity h1 { font-size: 20px; }
+      .profile-tabs { border-radius: 12px; }
+      .profile-tabs button { padding: 10px 13px; font-size: 12px; }
+      .item-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="profile-page">
+    <header class="profile-header">
+      <div class="profile-avatar" id="profileAvatar">U</div>
+      <div class="profile-identity">
+        <h1 id="profileName">Memuat profil...</h1>
+        <p id="profileBio">Memuat informasi pengguna</p>
+        <span id="profileAddress"></span>
+      </div>
+      <div class="profile-actions">
+        <button id="editProfileButton" hidden>Edit Profil</button>
+        <a class="konveksibos-button"
+           href="https://konveksibos.vercel.app/"
+           target="_blank"
+           rel="noopener noreferrer">
+          Buka KonveksiBos ↗
+        </a>
+      </div>
+    </header>
+
+    <nav class="profile-tabs" role="tablist" aria-label="Profil">
+      <button id="machinesTab" class="active" role="tab" aria-selected="true">Mesin</button>
+      <button id="scopesTab" role="tab" aria-selected="false">Scope</button>
+      <button id="videosTab" role="tab" aria-selected="false">Video</button>
+      <button id="designsTab" role="tab" aria-selected="false">Design</button>
+    </nav>
+
+    <section id="machinesPanel" class="profile-section" role="tabpanel">
+      <div class="section-heading">
+        <h2>Mesin yang Dimiliki</h2>
+      </div>
+
+========== FASTPRODUCTION AUTH TOKEN USAGE ==========
+assets/js/dashboard.js:54:    const { data: { user }, error: authError } = await window.db.auth.getUser();
+assets/js/profile.js:12:  const { data: authData, error: authError } = await db.auth.getUser();
+assets/js/profile.js:20:  const targetUserId = params.get("id") || currentUser.id;
+assets/js/profile.js:21:  const isOwnProfile = targetUserId === currentUser.id;
+assets/js/profile.js:66:    .eq("id", targetUserId)
+assets/js/profile.js:145:        .eq("user_id", targetUserId)
+assets/js/profile.js:160:        .eq("owner_id", targetUserId);
+assets/js/profile.js:247:        .eq("creator_id", targetUserId)
+assets/js/profile.js:295:      .eq("user_id", targetUserId)
+assets/js/profile.js:357:        .eq("user_id", targetUserId)
+assets/js/machines.js:28:    await db.auth.getUser();
+assets/js/edit-profile.js:13:    await db.auth.getUser();
+assets/js/create-scope.js:20:    const { data, error } = await window.db.auth.getUser();
+assets/js/lowongan.js:12:    await db.auth.getUser();
+assets/js/video-production.js:10:    await db.auth.getUser();
+assets/js/design.js:11:  const { data: auth, error: authError } = await db.auth.getUser();
+assets/js/global-scope.js:16:    const { data, error } = await window.db.auth.getUser();
+assets/js/scope-detail.js:72:      await db.auth.getUser();
+assets/js/scope-detail.js:311:      const { data: authData } = await db.auth.getUser();
