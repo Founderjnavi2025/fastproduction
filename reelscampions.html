@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101510">
+<title>Reels Campions - FastProduction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<main class="rc-page">
+  <header class="rc-header">
+    <a href="dashboard.html" class="rc-back">← Dashboard</a>
+    <div class="rc-brand">FASTPRODUCTION</div>
+    <h1>Reels Campions</h1>
+    <p>Etalase karya komunitas FastProduction</p>
+  </header>
+
+  <section class="rc-content">
+    <div class="rc-toolbar">
+      <div>
+        <strong>DESIGNER MARKETPLACE</strong>
+        <p id="rcCount">Memuat etalase...</p>
+      </div>
+      <a href="profile.html" class="rc-publish">＋ Buat Desain</a>
+    </div>
+
+    <div id="rcMessage" class="rc-message">Memuat akun desainer...</div>
+    <div id="rcShops" class="rc-shops"></div>
+  </section>
+
+  <footer class="rc-footer">
+    FASTPRODUCTION · DESIGN COMMUNITY
+  </footer>
+</main>
+
+<style>
+.rc-page {
+  min-height:100vh;
+  background:#0d120e;
+  color:#f1f5f1;
+  padding:20px;
+  box-sizing:border-box;
+}
+.rc-page * { box-sizing:border-box; }
+.rc-header { max-width:1000px;margin:0 auto 30px; }
+.rc-back { color:#a8c9ac;text-decoration:none;font-size:13px; }
+.rc-brand { margin-top:30px;color:#9fbea3;font-size:10px;letter-spacing:3px;font-weight:900; }
+.rc-header h1 { margin:8px 0;font-size:clamp(30px,7vw,48px); }
+.rc-header p,.rc-toolbar p { color:#929d93;font-size:13px;margin:5px 0; }
+.rc-content { max-width:1000px;margin:auto; }
+.rc-toolbar { display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px; }
+.rc-toolbar strong { font-size:12px;letter-spacing:1px; }
+.rc-publish { background:#c4e4c7;color:#17251a;padding:11px 14px;border-radius:10px;text-decoration:none;font-size:12px;font-weight:900;white-space:nowrap; }
+.rc-message { padding:22px;text-align:center;color:#aab5aa;font-size:13px; }
+.rc-shops { display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:18px; }
+.rc-shop { border:1px solid #29352b;background:#151c16;border-radius:17px;overflow:hidden; }
+.rc-shop-head { display:flex;align-items:center;gap:12px;padding:16px;cursor:pointer; }
+.rc-avatar { width:44px;height:44px;flex-shrink:0;border-radius:50%;display:grid;place-items:center;background:#304633;color:#d4ead6;font-size:18px;font-weight:900; }
+.rc-shop-name { font-weight:900;font-size:14px; }
+.rc-shop-count { color:#9ba89c;font-size:11px;margin-top:4px; }
+.rc-arrow { margin-left:auto;color:#a8c9ac; }
+.rc-designs { display:none;padding:0 12px 14px; }
+.rc-shop.open .rc-designs { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px; }
+.rc-design { min-width:0;overflow:hidden;border-radius:10px;background:#0e130f; }
+.rc-design img { width:100%;aspect-ratio:4/5;object-fit:cover;display:block; }
+.rc-design-info { padding:9px; }
+.rc-design-title { font-size:12px;font-weight:800;overflow-wrap:anywhere; }
+.rc-design-category { color:#9eae9f;font-size:10px;margin-top:5px; }
+.rc-footer { max-width:1000px;margin:45px auto 10px;text-align:center;color:#687569;font-size:10px;letter-spacing:2px; }
+@media(max-width:480px) {
+  .rc-page { padding:15px; }
+  .rc-toolbar { align-items:flex-start; }
+}
+</style>
+
+<script src="assets/js/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase.js"></script>
+<script src="assets/js/logout.js"></script>
+<script src="assets/js/design-po.js"></script>
+<script src="assets/js/reelscampions.js"></script>
+</body>
+</html>
