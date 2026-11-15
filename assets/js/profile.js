@@ -99,9 +99,23 @@ document.addEventListener("DOMContentLoaded", async () => {
         labStatus.textContent = "Menghubungkan ke KonveksiBos...";
 
         // Supabase client otomatis mengirim access token sesi FastProduction.
-        const { data, error } = await db.functions.invoke("fastproduction-sso", {
-          body: {}
-        });
+        const response = await fetch(
+          "https://pbwkjdtqhzmqtcecsjot.supabase.co/functions/v1/fastproduction-sso",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBid2tqZHRxaHptcXRjZWNzam90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5NjI0NDAsImV4cCI6MjEwOTUzODQ0MH0.22jUMqyd1UoECMGzD1eB9clcHdS-N3gmySRA4yQW-ZM",
+              "Authorization": `Bearer ${accessToken}`
+            },
+            body: JSON.stringify({})
+          }
+        );
+
+        const data = await response.json().catch(() => ({}));
+        const error = !response.ok
+          ? { message: data?.error || `HTTP ${response.status}` }
+          : null;
 
         if (error) {
           let detail = error.message || "SSO gagal";
