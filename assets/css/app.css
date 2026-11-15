@@ -1197,3 +1197,32 @@ form {
   color: var(--muted, #999);
   font-size: 13px;
 }
+
+/* REELS CAMPIONS - MAU PO */
+.rc-po-row {
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:11px;
+}
+
+.rc-po-interest {
+  color:#9eae9f;
+  font-size:10px;
+}
+
+.rc-po-button {
+  width:100%;
+  border:0;
+  border-radius:9px;
+  padding:11px 8px;
+  background:#c4e4c7;
+  color:#17251a;
+  font-size:11px;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.rc-po-button:active {
+  transform:scale(.98);
+}

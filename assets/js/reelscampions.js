@@ -61,6 +61,13 @@
             <div class="rc-design-info">
               <div class="rc-design-title">${escapeHTML(item.title)}</div>
               <div class="rc-design-category">${escapeHTML(item.category)}</div>
+              <div class="rc-po-row">
+                <span class="rc-po-interest">0 peminat</span>
+                <button class="rc-po-button" type="button"
+                  data-design-id="${escapeHTML(item.id)}">
+                  MAU PO →
+                </button>
+              </div>
             </div>
           </article>
         `).join('');
@@ -79,6 +86,12 @@
           </section>
         `;
       }).join('');
+
+      shops.querySelectorAll('.rc-po-button').forEach(button => {
+        button.addEventListener('click', () => {
+          alert('Desain dipilih! Sistem komitmen PO akan kita aktifkan pada tahap berikutnya.');
+        });
+      });
 
       shops.querySelectorAll('.rc-shop-head').forEach(head => {
         const toggle = () => head.closest('.rc-shop').classList.toggle('open');
