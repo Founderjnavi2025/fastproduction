@@ -1226,3 +1226,15 @@ form {
 .rc-po-button:active {
   transform:scale(.98);
 }
+
+/* MAU PO - LIVE INTEREST */
+.rc-po-button.joined {
+  background: #263c2b;
+  color: #c4e4c7;
+  border: 1px solid #55745a;
+}
+
+.rc-po-button:disabled {
+  opacity: .6;
+  cursor: wait;
+}
