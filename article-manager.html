@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Article Manager — FastProduction</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#090d18;color:#e8edf7;font-family:Arial,sans-serif;padding:24px 14px}
+main{max-width:900px;margin:auto}
+h1{font-size:25px}
+p{color:#9eabc1;line-height:1.6}
+.panel{background:#111a2b;border:1px solid #26344d;border-radius:13px;padding:18px;margin:18px 0}
+label{display:block;margin:14px 0 7px;font-weight:bold}
+textarea,input{width:100%;background:#080f1d;color:#fff;border:1px solid #35445e;border-radius:8px;padding:12px;font:14px Arial}
+textarea{min-height:280px;resize:vertical;line-height:1.6}
+input{height:42px}
+button{border:0;border-radius:8px;padding:12px 18px;background:#3478f6;color:white;font-weight:bold;cursor:pointer;margin:12px 8px 0 0}
+button:disabled{opacity:.4;cursor:not-allowed}
+.secondary{background:#263750}
+#status{padding:12px;border-radius:8px;background:#0b1423;margin-top:14px;white-space:pre-wrap}
+.preview{background:#fff;color:#202a38;border-radius:10px;padding:24px;margin-top:16px;overflow-wrap:anywhere}
+.preview h1,.preview h2,.preview h3{color:#17243a}
+.preview p{color:#344054}
+.preview img{max-width:100%;height:auto}
+.preview a{color:#2463d4}
+.meta{font-size:12px;color:#8492a8;overflow-wrap:anywhere}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<main>
+<h1>Article Manager</h1>
+<p>FastProduction Journal · Buat, periksa, dan terbitkan artikel.</p>
+
+<div class="panel">
+  <div id="authStatus">Memeriksa sesi login...</div>
+
+  <label for="articleInput">Tempel seluruh isi artikel</label>
+  <textarea id="articleInput" placeholder="Tempel artikel di sini. Bisa berupa teks biasa atau HTML hasil editor."></textarea>
+
+  <button id="previewBtn" class="secondary" disabled>Buat Preview</button>
+
+  <div id="previewArea" class="hidden">
+    <label>Judul artikel</label>
+    <input id="titleInput">
+
+    <label>Slug URL</label>
+    <input id="slugInput">
+
+    <label>Meta title</label>
+    <input id="metaTitleInput" maxlength="60">
+
+    <label>Meta description</label>
+    <textarea id="metaDescriptionInput" rows="3" maxlength="160" style="min-height:75px"></textarea>
+
+    <p id="seoInfo"></p>
+
+    <h3>Preview artikel</h3>
+    <div class="preview">
+      <h1 id="previewTitle"></h1>
+      <div class="meta" id="previewMeta"></div>
+      <div id="previewContent"></div>
+    </div>
+
+    <button id="publishBtn" disabled>Upload &amp; Publish</button>
+  </div>
+
+  <div id="status">Menunggu artikel...</div>
+</div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/supabase.js"></script>
+
+<script>
+(() => {
+  const ADMIN_UID = "0b0ab1cb-fd49-4be3-b820-cd6cbf48888c";
+
+  const $ = id => document.getElementById(id);
+  let currentUser = null;
+  let safeContent = "";
+
+  const allowedTags = new Set([
+    "P","H1","H2","H3","UL","OL","LI",
+    "STRONG","B","EM","I","A","IMG",
+    "BLOCKQUOTE","BR","HR","FIGURE","FIGCAPTION"
+  ]);
+
+  function slugify(text) {
+    return text.toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+  }
+
+  function cleanHTML(source) {
+    const doc = new DOMParser().parseFromString(source, "text/html");
+
+    function cleanNode(node) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        return document.createTextNode(node.textContent);
+      }
+
+      if (node.nodeType !== Node.ELEMENT_NODE) {
+        return document.createDocumentFragment();
+      }
+
+      const tag = node.tagName;
+
+      if (["SCRIPT","STYLE","IFRAME","OBJECT","EMBED","FORM","SVG"].includes(tag)) {
+        return document.createDocumentFragment();
+      }
+
+      const fragment = document.createDocumentFragment();
+
+      if (!allowedTags.has(tag)) {
+        [...node.childNodes].forEach(child => fragment.append(cleanNode(child)));
+        return fragment;
+      }
+
+      const el = document.createElement(tag.toLowerCase());
+
+      if (tag === "A") {
+        const href = node.getAttribute("href") || "";
+        try {
+          const url = new URL(href, location.origin);
+          if (["http:","https:"].includes(url.protocol)) {
+            el.setAttribute("href", url.href);
+            el.setAttribute("rel", "nofollow noopener");
+          }
+        } catch {}
+      }
+
+      if (tag === "IMG") {
+        const src = node.getAttribute("src") || "";
+        try {
+          const url = new URL(src, location.origin);
+          if (["http:","https:"].includes(url.protocol)) {
+            el.setAttribute("src", url.href);
+            el.setAttribute("loading", "lazy");
+          }
+        } catch {}
+        el.setAttribute("alt", (node.getAttribute("alt") || "").slice(0,250));
+      }
+
+      [...node.childNodes].forEach(child => el.append(cleanNode(child)));
+      return el;
+    }
+
+    const output = document.createElement("div");
+    [...doc.body.childNodes].forEach(node => output.append(cleanNode(node)));
+    return output.innerHTML;
+  }
+
+  function prepareArticle(raw) {
+    const doc = new DOMParser().parseFromString(raw, "text/html");
+    let title = doc.querySelector("h1")?.textContent?.trim() || "";
+
+    if (!title) {
+      title = raw.replace(/<[^>]*>/g, "\n")
+        .split(/\r?\n/)
+        .map(x => x.trim())
+        .find(Boolean) || "";
+    }
+
+    if (doc.querySelector("h1")) {
+      doc.querySelector("h1").remove();
+    }
+
+    let body = doc.body.innerHTML.trim();
+
+    if (!body || !/<[a-z][\s\S]*>/i.test(body)) {
+      const lines = raw.replace(/<[^>]*>/g, "")
+        .split(/\r?\n/)
+        .map(x => x.trim())
+        .filter(Boolean);
+
+      if (lines[0] === title) lines.shift();
+
+      body = lines.map(line =>
+        "<p>" + escapeHTML(line) + "</p>"
+      ).join("");
+    }
+
+    return { title, content: cleanHTML(body) };
+  }
+
+  function escapeHTML(value) {
+    return value.replace(/[&<>"']/g, char => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",
+      '"':"&quot;","'":"&#39;"
+    })[char]);
+  }
+
+  function plainText(html) {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    return (doc.body.textContent || "").replace(/\s+/g," ").trim();
+  }
+
+  function makeExcerpt(html) {
+    return plainText(html).slice(0,155).trim();
+  }
+
+  function updatePreview() {
+    const title = $("titleInput").value.trim();
+    const metaTitle = $("metaTitleInput").value.trim();
+    const description = $("metaDescriptionInput").value.trim();
+
+    $("previewTitle").textContent = title;
+    $("previewMeta").textContent =
+      "fastproduction-tvgg.vercel.app/artikel/" +
+      $("slugInput").value + ".html";
+
+    $("previewContent").innerHTML = safeContent;
+
+    const text = plainText(safeContent);
+    const h2Count = (safeContent.match(/<h2[\s>]/gi) || []).length;
+    const issues = [];
+
+    if (!title) issues.push("Judul kosong");
+    if (title.length > 70) issues.push("Judul cukup panjang");
+    if (!metaTitle) issues.push("Meta title kosong");
+    if (description.length < 70) issues.push("Meta description terlalu pendek");
+    if (description.length > 160) issues.push("Meta description terlalu panjang");
+    if (h2Count === 0) issues.push("Belum ada heading H2");
+    if (text.length < 300) issues.push("Isi artikel masih pendek");
+
+    $("seoInfo").textContent = issues.length
+      ? "Pemeriksaan SEO: " + issues.join(" · ")
+      : "Pemeriksaan awal SEO: struktur dasar sudah tersedia.";
+
+    $("publishBtn").disabled =
+      !currentUser || !title || !$("slugInput").value.trim() ||
+      !safeContent || !metaTitle || !description;
+  }
+
+  async function initialize() {
+    if (!window.db) {
+      $("authStatus").textContent = "Supabase belum terhubung. Periksa konfigurasi.";
+      return;
+    }
+
+    const { data, error } = await db.auth.getUser();
+
+    if (error || !data.user) {
+      $("authStatus").textContent = "Silakan login ke akun FastProduction terlebih dahulu.";
+      return;
+    }
+
+    if (data.user.id !== ADMIN_UID) {
+      $("authStatus").textContent = "Akun ini tidak memiliki akses Article Manager.";
+      return;
+    }
+
+    currentUser = data.user;
+    $("authStatus").textContent = "Login admin terverifikasi.";
+    $("previewBtn").disabled = false;
+    $("status").textContent = "Siap membuat artikel.";
+  }
+
+  $("previewBtn").addEventListener("click", () => {
+    const raw = $("articleInput").value.trim();
+
+    if (!raw) {
+      $("status").textContent = "Tempel artikel terlebih dahulu.";
+      return;
+    }
+
+    const article = prepareArticle(raw);
+
+    if (!article.title || !article.content) {
+      $("status").textContent = "Judul atau isi artikel tidak ditemukan.";
+      return;
+    }
+
+    safeContent = article.content;
+
+    $("titleInput").value = article.title;
+    $("slugInput").value = slugify(article.title);
+    $("metaTitleInput").value =
+      article.title.length > 50
+        ? article.title.slice(0,50).trim()
+        : article.title + " | FastProduction";
+
+    $("metaDescriptionInput").value = makeExcerpt(safeContent);
+
+    $("previewArea").classList.remove("hidden");
+    updatePreview();
+
+    $("status").textContent = "Preview siap. Periksa artikel sebelum menerbitkan.";
+  });
+
+  ["titleInput","slugInput","metaTitleInput","metaDescriptionInput"]
+    .forEach(id => $(id).addEventListener("input", updatePreview));
+
+  $("publishBtn").addEventListener("click", async () => {
+    if (!currentUser) return;
+
+    const title = $("titleInput").value.trim();
+    const slug = slugify($("slugInput").value);
+    const metaTitle = $("metaTitleInput").value.trim();
+    const description = $("metaDescriptionInput").value.trim();
+
+    if (!title || !slug || !safeContent || !metaTitle || !description) {
+      $("status").textContent = "Lengkapi data artikel terlebih dahulu.";
+      return;
+    }
+
+    const button = $("publishBtn");
+    button.disabled = true;
+    button.textContent = "Menerbitkan...";
+
+    try {
+      const { data, error } = await db.rpc("publish_article", {
+        p_title: title,
+        p_slug: slug,
+        p_content: safeContent,
+        p_excerpt: makeExcerpt(safeContent),
+        p_meta_title: metaTitle,
+        p_meta_description: description
+      });
+
+      if (error) throw error;
+
+      $("status").textContent =
+        "Artikel berhasil disimpan dan diterbitkan!\nID: " + data +
+        "\nSlug: " + slug;
+
+      button.textContent = "Berhasil diterbitkan";
+    } catch (error) {
+      $("status").textContent = "Gagal menerbitkan: " + error.message;
+      button.disabled = false;
+      button.textContent = "Upload & Publish";
+    }
+  });
+
+  initialize();
+})();
+</script>
+</body>
+</html>
