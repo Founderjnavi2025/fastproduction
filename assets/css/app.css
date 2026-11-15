@@ -905,3 +905,295 @@ form {
   white-space: nowrap;
   scroll-snap-align: start;
 }
+
+/* ===== DESIGN TO PO MARKETPLACE ===== */
+.design-po {
+  width: 100%;
+  min-width: 0;
+  color: var(--text, #f4f4f4);
+}
+
+.design-po-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.design-po-eyebrow {
+  color: #9bba9d;
+  font-size: 10px;
+  letter-spacing: 2px;
+  font-weight: 800;
+}
+
+.design-po-header h2 {
+  margin: 7px 0 4px;
+  font-size: 25px;
+}
+
+.design-po-header p {
+  margin: 0;
+  color: var(--muted, #999);
+  font-size: 12px;
+}
+
+.design-po-count {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: #9bba9d;
+  border: 1px solid #344b39;
+  padding: 8px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.design-po-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.design-po-card {
+  overflow: hidden;
+  border: 1px solid var(--line, #303630);
+  border-radius: 18px;
+  background: var(--panel, #151a16);
+}
+
+.design-po-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  min-height: 280px;
+  max-height: 560px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(ellipse at 50% 40%, #344638 0%, transparent 65%),
+    linear-gradient(145deg, #202a22, #101410 75%);
+}
+
+.design-po-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  text-align: center;
+  color: #b8c5b8;
+}
+
+.design-po-placeholder span {
+  font-size: 10px;
+  letter-spacing: 3px;
+  opacity: .7;
+}
+
+.design-po-placeholder strong {
+  font-size: 17px;
+}
+
+.design-po-placeholder small {
+  font-size: 11px;
+  color: #899589;
+}
+
+.design-po-image-tag {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  padding: 7px 10px;
+  border-radius: 20px;
+  background: #111a13cc;
+  color: #b9d7bc;
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+
+.design-po-info {
+  padding: 16px;
+}
+
+.design-po-meta {
+  display: flex;
+  justify-content: space-between;
+  color: #9eb49f;
+  font-size: 10px;
+  letter-spacing: .7px;
+}
+
+.design-po-info h3 {
+  margin: 12px 0 5px;
+  font-size: 19px;
+}
+
+.design-po-owner {
+  color: var(--muted, #999);
+  font-size: 12px;
+  margin: 0;
+}
+
+.design-po-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.design-po-status {
+  color: #a5aaa5;
+  font-size: 11px;
+}
+
+.design-po-cta {
+  padding: 11px 16px;
+  border-radius: 10px;
+  background: #c4e4c7;
+  color: #17251a;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: .5px;
+}
+
+.design-po-cta span {
+  margin-left: 10px;
+}
+
+.design-po-next {
+  padding: 20px 10px;
+  text-align: center;
+  color: var(--muted, #999);
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.design-po-next span {
+  display: block;
+  font-size: 22px;
+  margin-bottom: 7px;
+}
+
+@media (min-width: 700px) {
+  .design-po-feed {
+    max-width: 620px;
+    margin: 0 auto;
+  }
+}
+
+/* ===== DESIGN PO FORM ===== */
+.design-po-create,
+.design-po-submit {
+  width: 100%;
+  padding: 14px;
+  border: 0;
+  border-radius: 12px;
+  background: #c4e4c7;
+  color: #17251a;
+  font-weight: 900;
+  margin-bottom: 16px;
+}
+
+.design-po-create span {
+  font-size: 20px;
+  margin-right: 8px;
+}
+
+.design-po-form {
+  padding: 16px;
+  margin-bottom: 20px;
+  border: 1px solid var(--line, #303630);
+  border-radius: 16px;
+  background: var(--panel, #151a16);
+}
+
+.design-po-form[hidden] {
+  display: none !important;
+}
+
+.design-po-form-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.design-po-form-heading h3 {
+  margin: 0;
+}
+
+.design-po-form-heading button {
+  background: transparent;
+  color: var(--text, white);
+  border: 0;
+  font-size: 20px;
+}
+
+.design-po-form label {
+  display: block;
+  margin: 14px 0 7px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.design-po-form input,
+.design-po-form select,
+.design-po-form textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--line, #444);
+  border-radius: 10px;
+  background: #101510;
+  color: white;
+  font: inherit;
+  font-size: 13px;
+}
+
+.design-po-form input[type="file"] {
+  padding: 9px;
+}
+
+.design-po-or {
+  text-align: center;
+  margin: 13px;
+  color: var(--muted, #999);
+  font-size: 10px;
+}
+
+.design-po-hint,
+.design-po-form-message {
+  color: var(--muted, #999);
+  font-size: 11px;
+}
+
+.design-po-submit {
+  margin-top: 16px;
+  margin-bottom: 0;
+}
+
+.design-po-image img {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+}
+
+.design-po-description {
+  color: var(--muted, #aaa);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.design-po-empty {
+  padding: 35px 15px;
+  text-align: center;
+  border: 1px dashed var(--line, #444);
+  border-radius: 14px;
+  color: var(--muted, #999);
+  font-size: 13px;
+}
