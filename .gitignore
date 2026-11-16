@@ -1,2 +1,15 @@
 node_modules/
 .vercel/
+
+# Environment
+.env
+.env.*
+
+# Backup
+*.bak
+*.backup
+backup_*/
+
+# Diagnostic
+diagnostic/
+hasil.txt
