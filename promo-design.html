@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="description" content="Ide besar tidak membutuhkan pabrik besar. Mulai bisnis fashion dari kreativitas dan desainmu bersama ekosistem FastProduction.">
+<title>Ide Besar Tidak Membutuhkan Pabrik Besar — FastProduction</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   PROMO DESIGN — FASTPRODUCTION
+   Scope: .pd-*
+   Style: Editorial Fashion × Modern Startup
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+.pd-body {
+  margin: 0;
+  padding: 0;
+  background: #0a0a0a;
+  color: #f5f5f0;
+  font-family: 'Space Grotesk', -apple-system, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.pd-body img {
+  max-width: 100%;
+  display: block;
+}
+
+.pd-body a {
+  color: inherit;
+}
+
+/* ===== SCROLL REVEAL ===== */
+.pd-reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pd-reveal.pd-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pd-reveal-delay-1 { transition-delay: 0.1s; }
+.pd-reveal-delay-2 { transition-delay: 0.2s; }
+.pd-reveal-delay-3 { transition-delay: 0.3s; }
+
+/* ===== TOP BAR ===== */
+.pd-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(10, 10, 10, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.3s;
+}
+
+.pd-topbar.pd-scrolled {
+  padding: 14px 24px;
+  background: rgba(10, 10, 10, 0.92);
+}
+
+.pd-logo {
+  font: 700 15px 'Space Grotesk';
+  letter-spacing: 2px;
+  color: #f5f5f0;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pd-logo span {
+  color: #c6ff69;
+}
+
+.pd-logo-mark {
+  width: 8px;
+  height: 8px;
+  background: #c6ff69;
+  border-radius: 50%;
+  box-shadow: 0 0 12px #c6ff69;
+  animation: pd-pulse 2s infinite;
+}
+
+@keyframes pd-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.pd-topbar-meta {
+  font: 500 10px 'DM Mono';
+  color: #6b7569;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* ===== HERO ===== */
+.pd-hero {
+  min-height: 100vh;
+  padding: 140px 24px 80px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.pd-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 10% 20%, rgba(198, 255, 105, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 80%, rgba(168, 121, 255, 0.06) 0%, transparent 50%),
+    #0a0a0a;
+  z-index: 0;
+}
+
+.pd-hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.pd-hero-text {
+  max-width: 720px;
+}
+
+.pd-hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  border: 1px solid rgba(198, 255, 105, 0.3);
+  border-radius: 100px;
+  background: rgba(198, 255, 105, 0.05);
+  color: #c6ff69;
+  font: 500 10px 'DM Mono';
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+
+.pd-hero-tag::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: #c6ff69;
+  border-radius: 50%;
+}
+
+.pd-hero h1 {
+  font: 900 clamp(40px, 9vw, 96px)/0.95 'Playfair Display', serif;
+  letter-spacing: -3px;
+  margin: 0 0 32px;
+  color: #f5f5f0;
+  font-style: italic;
+}
+
+.pd-hero h1 em {
+  font-style: normal;
+  color: #c6ff69;
+  display: block;
+}
+
+.pd-hero-sub {
+  font: 400 clamp(15px, 2vw, 19px)/1.65 'Space Grotesk';
+  color: #a5b0a3;
+  max-width: 580px;
+  margin: 0 0 40px;
+}
+
+.pd-hero-sub strong {
+  color: #f5f5f0;
+  font-weight: 600;
+}
+
+.pd-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+}
+
+.pd-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 32px;
+  background: #c6ff69;
+  color: #0a0a0a;
+  font: 700 13px 'Space Grotesk';
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: all 0.3s;
+  border: 2px solid #c6ff69;
+}
+
+.pd-btn-primary:hover {
+  background: transparent;
+  color: #c6ff69;
+  transform: translateX(4px);
+}
+
+.pd-btn-primary span {
+  font-size: 18px;
+  transition: transform 0.3s;
+}
+
+.pd-btn-primary:hover span {
+  transform: translateX(4px);
+}
+
+.pd-hero-scroll {
+  position: absolute;
+  bottom: 32px;
+  left: 24px;
+  font: 500 9px 'DM Mono';
+  color: #6b7569;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pd-hero-scroll::after {
+  content: '';
+  width: 40px;
+  height: 1px;
+  background: #6b7569;
+  animation: pd-scroll-line 2s infinite;
+  transform-origin: left;
+}
+
+@keyframes pd-scroll-line {
+  0%, 100% { transform: scaleX(0.3); opacity: 0.3; }
+  50% { transform: scaleX(1); opacity: 1; }
+}
+
+/* Hero image stack */
+.pd-hero-visual {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 12px;
+  height: 520px;
+}
+
+.pd-hero-img {
+  overflow: hidden;
+  border-radius: 4px;
+  position: relative;
+}
+
+.pd-hero-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  filter: grayscale(30%) contrast(1.05);
+}
+
+.pd-hero-img:hover img {
+  transform: scale(1.08);
+  filter: grayscale(0%) contrast(1.1);
+}
+
+.pd-hero-img:nth-child(1) {
+  grid-row: span 2;
+}
+
+.pd-hero-img::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  padding: 4px 8px;
+  background: rgba(10, 10, 10, 0.8);
+  color: #c6ff69;
+  font: 500 9px 'DM Mono';
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border-radius: 2px;
+}
+
+/* ===== SECTION COMMON ===== */
+.pd-section {
+  padding: 100px 24px;
+  position: relative;
+}
+
+.pd-section-alt {
+  background: #111310;
+}
+
+.pd-section-light {
+  background: #f5f5f0;
+  color: #0a0a0a;
+}
+
+.pd-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.pd-section-label {
+  display: inline-block;
+  font: 500 10px 'DM Mono';
+  color: #c6ff69;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(198, 255, 105, 0.3);
+}
+
+.pd-section-light .pd-section-label {
+  color: #4d7c0f;
+  border-bottom-color: rgba(77, 124, 15, 0.3);
+}
+
+.pd-section-title {
+  font: 700 clamp(32px, 5vw, 56px)/1.1 'Playfair Display', serif;
+  letter-spacing: -1.5px;
+  margin: 0 0 32px;
+  max-width: 900px;
+}
+
+.pd-section-light .pd-section-title {
+  color: #0a0a0a;
+}
+
+.pd-section-title em {
+  font-style: italic;
+  color: #c6ff69;
+}
+
+.pd-section-light .pd-section-title em {
+  color: #4d7c0f;
+}
+
+.pd-section-lead {
+  font: 400 clamp(15px, 2vw, 18px)/1.7 'Space Grotesk';
+  color: #a5b0a3;
+  max-width: 680px;
+  margin: 0 0 48px;
+}
+
+.pd-section-light .pd-section-lead {
+  color: #4a4a45;
+}
+
+/* ===== PROBLEM SECTION ===== */
+.pd-problems {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 48px;
+}
+
+.pd-problem {
+  padding: 32px 28px;
+  background: #0a0a0a;
+  position: relative;
+  transition: background 0.3s;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.pd-problem:hover {
+  background: #151815;
+}
+
+.pd-problem-num {
+  font: 700 13px 'DM Mono';
+  color: #c6ff69;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.pd-problem h3 {
+  font: 600 17px 'Space Grotesk';
+  margin: 0 0 8px;
+  color: #f5f5f0;
+  letter-spacing: -0.3px;
+}
+
+.pd-problem p {
+  font: 400 13.5px/1.6 'Space Grotesk';
+  color: #8b978a;
+  margin: 0;
+}
+
+/* ===== PARADIGM SHIFT ===== */
+.pd-shift {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+  align-items: center;
+  margin-top: 48px;
+}
+
+.pd-shift-visual {
+  position: relative;
+  height: 400px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.pd-shift-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(50%);
+}
+
+.pd-shift-visual::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 50%, rgba(10, 10, 10, 0.6) 100%);
+}
+
+.pd-shift-text blockquote {
+  font: 700 clamp(22px, 3vw, 32px)/1.35 'Playfair Display', serif;
+  font-style: italic;
+  color: #f5f5f0;
+  margin: 0 0 24px;
+  padding-left: 24px;
+  border-left: 3px solid #c6ff69;
+}
+
+.pd-shift-text p {
+  font: 400 15px/1.7 'Space Grotesk';
+  color: #a5b0a3;
+  margin: 0 0 16px;
+}
+
+.pd-shift-text p strong {
+  color: #c6ff69;
+  font-weight: 600;
+}
+
+/* ===== ECOSYSTEM ===== */
+.pd-eco {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 48px;
+}
+
+.pd-eco-card {
+  padding: 40px 32px;
+  background: #0a0a0a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  transition: all 0.4s;
+  position: relative;
+  overflow: hidden;
+}
+
+.pd-section-light .pd-eco-card {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.pd-eco-card::before {
+  content: attr(data-num);
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  font: 700 60px 'DM Mono';
+  color: rgba(198, 255, 105, 0.08);
+  letter-spacing: -2px;
+  line-height: 1;
+}
+
+.pd-section-light .pd-eco-card::before {
+  color: rgba(77, 124, 15, 0.06);
+}
+
+.pd-eco-card:hover {
+  border-color: #c6ff69;
+  transform: translateY(-4px);
+}
+
+.pd-eco-label {
+  font: 500 10px 'DM Mono';
+  color: #c6ff69;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.pd-section-light .pd-eco-label {
+  color: #4d7c0f;
+}
+
+.pd-eco-card h3 {
+  font: 700 26px/1.15 'Playfair Display', serif;
+  margin: 0 0 12px;
+  color: #f5f5f0;
+  letter-spacing: -0.5px;
+}
+
+.pd-section-light .pd-eco-card h3 {
+  color: #0a0a0a;
+}
+
+.pd-eco-card p {
+  font: 400 14px/1.65 'Space Grotesk';
+  color: #a5b0a3;
+  margin: 0;
+}
+
+.pd-section-light .pd-eco-card p {
+  color: #4a4a45;
+}
+
+.pd-eco-card-highlight {
+  background: linear-gradient(135deg, #1a2118, #0f140e);
+  border-color: #c6ff69;
+}
+
+.pd-section-light .pd-eco-card-highlight {
+  background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+  border-color: #0a0a0a;
+}
+
+.pd-eco-card-highlight h3,
+.pd-eco-card-highlight p {
+  color: #f5f5f0 !important;
+}
+
+/* ===== JOURNEY ===== */
+.pd-journey {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  margin-top: 48px;
+  position: relative;
+}
+
+.pd-journey-item {
+  padding: 32px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 20px;
+  align-items: baseline;
+  transition: all 0.3s;
+}
+
+.pd-journey-item:last-child {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pd-journey-item:hover {
+  padding-left: 16px;
+  background: rgba(198, 255, 105, 0.03);
+}
+
+.pd-journey-num {
+  font: 500 11px 'DM Mono';
+  color: #c6ff69;
+  letter-spacing: 2px;
+  min-width: 40px;
+}
+
+.pd-journey-item h3 {
+  font: 700 clamp(22px, 3vw, 32px)/1.2 'Playfair Display', serif;
+  margin: 0 0 6px;
+  color: #f5f5f0;
+  letter-spacing: -0.5px;
+}
+
+.pd-journey-item p {
+  font: 400 13px/1.6 'Space Grotesk';
+  color: #8b978a;
+  margin: 0;
+  grid-column: 2;
+}
+
+/* ===== START SMALL ===== */
+.pd-start {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  margin-top: 40px;
+}
+
+.pd-start-item {
+  padding: 28px;
+  background: rgba(0, 0, 0, 0.03);
+  border-left: 2px solid #4d7c0f;
+  border-radius: 0 4px 4px 0;
+}
+
+.pd-start-item h3 {
+  font: 700 18px 'Space Grotesk';
+  margin: 0 0 10px;
+  color: #0a0a0a;
+  letter-spacing: -0.3px;
+}
+
+.pd-start-item p {
+  font: 400 14px/1.65 'Space Grotesk';
+  color: #4a4a45;
+  margin: 0;
+}
+
+/* ===== CLOSING ===== */
+.pd-closing {
+  padding: 120px 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  background: #0a0a0a;
+}
+
+.pd-closing::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(198, 255, 105, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 100%, rgba(168, 121, 255, 0.1) 0%, transparent 60%);
+}
+
+.pd-closing-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.pd-closing h2 {
+  font: 900 clamp(32px, 6vw, 72px)/1.05 'Playfair Display', serif;
+  font-style: italic;
+  letter-spacing: -2px;
+  margin: 0 0 24px;
+  color: #f5f5f0;
+}
+
+.pd-closing h2 em {
+  font-style: normal;
+  color: #c6ff69;
+}
+
+.pd-closing p {
+  font: 400 clamp(15px, 2vw, 18px)/1.65 'Space Grotesk';
+  color: #a5b0a3;
+  max-width: 640px;
+  margin: 0 auto 40px;
+}
+
+.pd-disclaimer {
+  max-width: 680px;
+  margin: 80px auto 0;
+  padding: 24px 28px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  font: 400 12px/1.7 'DM Mono';
+  color: #6b7569;
+  text-align: left;
+}
+
+.pd-disclaimer strong {
+  color: #c6ff69;
+  font-family: 'Space Grotesk';
+  display: block;
+  margin-bottom: 8px;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* ===== FOOTER ===== */
+.pd-footer {
+  padding: 40px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  text-align: center;
+  font: 500 10px 'DM Mono';
+  color: #6b7569;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.pd-footer a {
+  color: #a5b0a3;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.pd-footer a:hover {
+  color: #c6ff69;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+/* Mobile small */
+@media (max-width: 480px) {
+  .pd-topbar-meta { display: none; }
+  .pd-hero { padding: 120px 20px 60px; min-height: auto; }
+  .pd-hero-visual { height: 340px; }
+  .pd-hero-scroll { display: none; }
+  .pd-section { padding: 72px 20px; }
+  .pd-closing { padding: 80px 20px; }
+}
+
+/* Tablet */
+@media (min-width: 640px) {
+  .pd-topbar { padding: 20px 40px; }
+  .pd-hero { padding: 160px 40px 100px; }
+  .pd-section { padding: 120px 40px; }
+  
+  .pd-problems {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .pd-eco {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .pd-eco-card-highlight {
+    grid-column: span 2;
+  }
+  
+  .pd-start {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .pd-closing { padding: 140px 40px; }
+  
+  .pd-footer {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+/* Desktop */
+@media (min-width: 960px) {
+  .pd-topbar { padding: 24px 56px; }
+  .pd-hero { padding: 180px 56px 120px; }
+  .pd-section { padding: 140px 56px; }
+  
+  .pd-hero-inner {
+    grid-template-columns: 1.15fr 1fr;
+    gap: 80px;
+  }
+  
+  .pd-hero-visual {
+    height: 620px;
+  }
+  
+  .pd-shift {
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+  }
+  
+  .pd-shift-visual {
+    height: 520px;
+  }
+  
+  .pd-eco {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .pd-eco-card-highlight {
+    grid-column: span 3;
+  }
+  
+  .pd-start {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .pd-closing { padding: 180px 56px; }
+  .pd-footer { padding: 48px 56px; }
+}
+
+/* Wide */
+@media (min-width: 1400px) {
+  .pd-hero { padding: 200px 80px 140px; }
+  .pd-section { padding: 160px 80px; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .pd-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .pd-hero-img img,
+  .pd-btn-primary,
+  .pd-eco-card,
+  .pd-journey-item {
+    transition: none !important;
+  }
+  .pd-logo-mark { animation: none !important; }
+}
+</style>
+</head>
+
+<body class="pd-body">
+
+<!-- ===== TOP BAR ===== -->
+<header class="pd-topbar" id="pd-topbar">
+  <a href="dashboard.html" class="pd-logo">
+    <span class="pd-logo-mark"></span>
+    FAST<span>PRODUCTION</span>
+  </a>
+  <div class="pd-topbar-meta">Microsite · Design Category</div>
+</header>
+
+<!-- ===== SECTION 1: HERO ===== -->
+<section class="pd-hero">
+  <div class="pd-hero-inner">
+    <div class="pd-hero-text">
+      <div class="pd-hero-tag pd-reveal">Kategori Design · FastProduction</div>
+      <h1 class="pd-reveal pd-reveal-delay-1">
+        Ide Besar
+        <em>Tidak Membutuhkan Pabrik Besar.</em>
+      </h1>
+      <p class="pd-hero-sub pd-reveal pd-reveal-delay-2">
+        Kamu punya ide. Kamu punya kreativitas. Sekarang bayangkan jika
+        <strong>desain yang selama ini hanya tersimpan di galeri</strong>
+        bisa menjadi awal dari sebuah produk fashion.
+      </p>
+      <div class="pd-hero-actions pd-reveal pd-reveal-delay-3">
+        <a href="#pd-section-shift" class="pd-btn-primary">
+          Kenali Peluangnya
+          <span>↓</span>
+        </a>
+      </div>
+    </div>
+    
+    <div class="pd-hero-visual pd-reveal pd-reveal-delay-2">
+      <div class="pd-hero-img" data-label="Editorial">
+        <img 
+          src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80&auto=format&fit=crop" 
+          alt="Fashion editorial minimalis"
+          loading="eager"
+        >
+      </div>
+      <div class="pd-hero-img" data-label="Detail">
+        <img 
+          src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&q=80&auto=format&fit=crop" 
+          alt="Detail tekstur fashion"
+          loading="lazy"
+        >
+      </div>
+      <div class="pd-hero-img" data-label="Produk">
+        <img 
+          src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&q=80&auto=format&fit=crop" 
+          alt="Produk fashion"
+          loading="lazy"
+        >
+      </div>
+    </div>
+  </div>
+  
+  <div class="pd-hero-scroll">Scroll to explore</div>
+</section>
+
+<!-- ===== SECTION 2: PROBLEM ===== -->
+<section class="pd-section pd-section-alt">
+  <div class="pd-container">
+    <div class="pd-section-label pd-reveal">01 — Kenyataan</div>
+    <h2 class="pd-section-title pd-reveal pd-reveal-delay-1">
+      Selama ini, memulai brand fashion<br>
+      terasa begitu <em>mahal.</em>
+    </h2>
+    <p class="pd-section-lead pd-reveal pd-reveal-delay-2">
+      Bukan karena idenya tidak cukup baik. Tapi karena setiap langkah terasa
+      membutuhkan sesuatu yang belum kamu punya.
+    </p>
+    
+    <div class="pd-problems">
+      <div class="pd-problem pd-reveal">
+        <div class="pd-problem-num">01</div>
+        <div>
+          <h3>Harus punya mesin produksi</h3>
+          <p>Mesin jahit, obras, sablon — investasi besar sebelum satu produk pun terlihat.</p>
+        </div>
+      </div>
+      <div class="pd-problem pd-reveal">
+        <div class="pd-problem-num">02</div>
+        <div>
+          <h3>Butuh modal bahan</h3>
+          <p>Kain, benang, aksesoris — pengeluaran yang harus disiapkan sebelum ada pesanan.</p>
+        </div>
+      </div>
+      <div class="pd-problem pd-reveal">
+        <div class="pd-problem-num">03</div>
+        <div>
+          <h3>Harus menyimpan stok</h3>
+          <p>Risiko produk tidak terjual, modal tertahan, dan ruang penyimpanan yang menumpuk.</p>
+        </div>
+      </div>
+      <div class="pd-problem pd-reveal">
+        <div class="pd-problem-num">04</div>
+        <div>
+          <h3>Butuh tempat produksi</h3>
+          <p>Ruang khusus untuk mesin, bahan, dan proses kerja — biaya tetap setiap bulan.</p>
+        </div>
+      </div>
+      <div class="pd-problem pd-reveal">
+        <div class="pd-problem-num">05</div>
+        <div>
+          <h3>Sulit menemukan mitra konveksi</h3>
+          <p>Butuh kepercayaan, komunikasi teknis, dan akses ke pihak yang benar-benar paham produksi.</p>
+        </div>
+      </div>
+      <div class="pd-problem pd-reveal">
+        <div class="pd-problem-num">06</div>
+        <div>
+          <h3>Dan akhirnya... ide berhenti di folder.</h3>
+          <p>Bukan karena tidak layak. Tapi karena terlalu banyak yang harus dimiliki sendirian.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 3: PARADIGM SHIFT ===== -->
+<section class="pd-section" id="pd-section-shift">
+  <div class="pd-container">
+    <div class="pd-section-label pd-reveal">02 — Perspektif Baru</div>
+    <h2 class="pd-section-title pd-reveal pd-reveal-delay-1">
+      Bagaimana jika kamu<br>
+      <em>tidak harus memiliki semuanya?</em>
+    </h2>
+    
+    <div class="pd-shift">
+      <div class="pd-shift-visual pd-reveal pd-reveal-delay-2">
+        <img 
+          src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=900&q=80&auto=format&fit=crop" 
+          alt="Proses kreatif desain fashion"
+          loading="lazy"
+        >
+      </div>
+      <div class="pd-shift-text pd-reveal pd-reveal-delay-3">
+        <blockquote>
+          "Desain adalah milikmu. Produksi bisa menjadi kolaborasi."
+        </blockquote>
+        <p>
+          Seorang desainer tidak perlu memiliki pabrik untuk melihat karyanya
+          menjadi produk nyata. Yang dibutuhkan adalah <strong>ruang untuk
+          bertemu</strong> — antara ide, kemampuan produksi, dan orang-orang
+          yang mencari produk itu.
+        </p>
+        <p>
+          FastProduction dibangun sebagai ruang tersebut. Bukan janji bisnis
+          instan. Bukan jaminan keuntungan. Tapi sebuah tempat di mana
+          kreativitas bisa mulai bertemu dengan realitas produksi.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 4: ECOSYSTEM ===== -->
+<section class="pd-section pd-section-light">
+  <div class="pd-container">
+    <div class="pd-section-label pd-reveal">03 — Ekosistem</div>
+    <h2 class="pd-section-title pd-reveal pd-reveal-delay-1">
+      Tiga elemen yang<br>
+      <em>membentuk ekosistem.</em>
+    </h2>
+    <p class="pd-section-lead pd-reveal pd-reveal-delay-2">
+      FastProduction mempertemukan tiga peran yang selama ini sering berjalan
+      sendiri-sendiri. Saat ketiganya terhubung, peluang mulai terbuka.
+    </p>
+    
+    <div class="pd-eco">
+      <div class="pd-eco-card pd-reveal" data-num="01">
+        <div class="pd-eco-label">Designer</div>
+        <h3>Menciptakan Ide</h3>
+        <p>
+          Ilustrasi, tipografi, motif, dan konsep pakaian. Desainer adalah titik
+          awal dari setiap koleksi — tempat ide pertama kali terlihat.
+        </p>
+      </div>
+      <div class="pd-eco-card pd-reveal pd-reveal-delay-1" data-num="02">
+        <div class="pd-eco-label">Producer</div>
+        <h3>Mewujudkan Produk</h3>
+        <p>
+          Konveksi, penjahit, dan pemilik mesin produksi. Merekalah yang
+          mengubah desain menjadi produk fisik yang bisa dipakai dan disentuh.
+        </p>
+      </div>
+      <div class="pd-eco-card pd-reveal pd-reveal-delay-2" data-num="03">
+        <div class="pd-eco-label">Market</div>
+        <h3>Menghadirkan Permintaan</h3>
+        <p>
+          Pembeli, reseller, dan pelanggan. Pihak yang membuat produk tidak
+          hanya berhenti sebagai gagasan, tapi sampai ke tangan yang tepat.
+        </p>
+      </div>
+      <div class="pd-eco-card pd-eco-card-highlight pd-reveal" data-num="✦">
+        <div class="pd-eco-label">FastProduction</div>
+        <h3>Ruang Pertemuan</h3>
+        <p>
+          Bukan pabrik. Bukan marketplace biasa. FastProduction adalah titik
+          temu antara kreativitas desainer, kapabilitas produsen, dan permintaan
+          pasar — dalam satu ekosistem yang terbuka.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 5: JOURNEY ===== -->
+<section class="pd-section pd-section-alt">
+  <div class="pd-container">
+    <div class="pd-section-label pd-reveal">04 — Perjalanan</div>
+    <h2 class="pd-section-title pd-reveal pd-reveal-delay-1">
+      Bagaimana sebuah desain<br>
+      <em>menjadi sesuatu yang nyata.</em>
+    </h2>
+    <p class="pd-section-lead pd-reveal pd-reveal-delay-2">
+      Lima tahap yang mengubah sebuah ide dari gambar di layar menjadi
+      produk yang bisa dilihat, dipakai, dan dikenali sebagai bagian dari brand.
+    </p>
+    
+    <div class="pd-journey">
+      <div class="pd-journey-item pd-reveal">
+        <div class="pd-journey-num">01</div>
+        <div>
+          <h3>Ide</h3>
+          <p>Sebuah konsep, referensi, atau kegelisahan yang ingin kamu sampaikan lewat pakaian.</p>
+        </div>
+      </div>
+      <div class="pd-journey-item pd-reveal">
+        <div class="pd-journey-num">02</div>
+        <div>
+          <h3>Desain</h3>
+          <p>Sketsa, ilustrasi, atau artwork yang mulai mengambil bentuk visual.</p>
+        </div>
+      </div>
+      <div class="pd-journey-item pd-reveal">
+        <div class="pd-journey-num">03</div>
+        <div>
+          <h3>Kolaborasi Produksi</h3>
+          <p>Desain dipertemukan dengan produsen yang paham cara merealisasikannya.</p>
+        </div>
+      </div>
+      <div class="pd-journey-item pd-reveal">
+        <div class="pd-journey-num">04</div>
+        <div>
+          <h3>Produk Fashion</h3>
+          <p>Kaos, hoodie, kemeja, atau aksesoris — bentuk nyata dari ide awal.</p>
+        </div>
+      </div>
+      <div class="pd-journey-item pd-reveal">
+        <div class="pd-journey-num">05</div>
+        <div>
+          <h3>Peluang Bisnis</h3>
+          <p>Produk bertemu pasar. Koleksi bertambah. Identitas brand mulai terbentuk.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 6: START SMALL ===== -->
+<section class="pd-section pd-section-light">
+  <div class="pd-container">
+    <div class="pd-section-label pd-reveal">05 — Mulai</div>
+    <h2 class="pd-section-title pd-reveal pd-reveal-delay-1">
+      Tidak harus langsung<br>
+      <em>punya brand besar.</em>
+    </h2>
+    <p class="pd-section-lead pd-reveal pd-reveal-delay-2">
+      Setiap koleksi besar dimulai dari satu langkah kecil yang berani diambil.
+      Ini tiga cara memulai tanpa harus menunggu semuanya siap.
+    </p>
+    
+    <div class="pd-start">
+      <div class="pd-start-item pd-reveal">
+        <h3>Mulai dari satu desain</h3>
+        <p>
+          Tidak perlu sepuluh koleksi. Satu desain yang benar-benar kamu
+          yakini bisa menjadi awal portofolio, dan awal cerita.
+        </p>
+      </div>
+      <div class="pd-start-item pd-reveal pd-reveal-delay-1">
+        <h3>Bangun portofolio</h3>
+        <p>
+          Setiap karya yang kamu tampilkan adalah bukti kemampuan. Portofolio
+          tumbuh seiring waktu, dan membuka peluang kolaborasi yang lebih serius.
+        </p>
+      </div>
+      <div class="pd-start-item pd-reveal pd-reveal-delay-2">
+        <h3>Cari kolaborasi</h3>
+        <p>
+          Produsen, reseller, atau pembeli yang tepat bisa mengubah arah
+          perjalananmu. Kolaborasi adalah bagian alami dari pertumbuhan brand.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 7: CLOSING ===== -->
+<section class="pd-closing">
+  <div class="pd-closing-inner">
+    <h2 class="pd-reveal">
+      Jangan biarkan ide terbaikmu<br>
+      <em>hanya menjadi gambar di galeri.</em>
+    </h2>
+    <p class="pd-reveal pd-reveal-delay-1">
+      Desain yang tidak pernah keluar dari folder tidak akan pernah menjadi
+      brand. Yang membedakan ide dan kenyataan adalah keberanian untuk mulai
+      — dan ruang untuk bertemu dengan orang yang tepat.
+    </p>
+    
+    <div class="pd-disclaimer pd-reveal pd-reveal-delay-2">
+      <strong>Catatan penting</strong>
+      FastProduction adalah ruang pertemuan. Biaya produksi, bahan, pengiriman,
+      dan pembagian hasil ditentukan oleh kesepakatan pihak-pihak yang bekerja
+      sama. FastProduction tidak menjanjikan penghasilan, keuntungan, atau
+      produksi gratis. Hasil setiap kolaborasi bergantung pada kesepakatan
+      yang dibuat bersama.
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="pd-footer">
+  <div>FASTPRODUCTION · DESIGN CATEGORY · 2026</div>
+  <a href="dashboard.html">Kembali ke Dashboard →</a>
+</footer>
+
+<script>
+/* ============================================================
+   PROMO DESIGN — SCROLL REVEAL + TOPBAR
+   ============================================================ */
+(function() {
+  'use strict';
+  
+  // Scroll reveal via IntersectionObserver
+  const reveals = document.querySelectorAll('.pd-reveal');
+  
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('pd-in');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.15,
+      rootMargin: '0px 0px -60px 0px'
+    });
+    
+    reveals.forEach(el => observer.observe(el));
+  } else {
+    // Fallback: langsung tampil
+    reveals.forEach(el => el.classList.add('pd-in'));
+  }
+  
+  // Topbar scroll effect
+  const topbar = document.getElementById('pd-topbar');
+  if (topbar) {
+    let lastScroll = 0;
+    window.addEventListener('scroll', () => {
+      const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+      if (currentScroll > 60) {
+        topbar.classList.add('pd-scrolled');
+      } else {
+        topbar.classList.remove('pd-scrolled');
+      }
+      lastScroll = currentScroll;
+    }, { passive: true });
+  }
+  
+  // Smooth scroll untuk anchor
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
