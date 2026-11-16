@@ -322,15 +322,108 @@
     }
     .back-link:hover { color: var(--accent); }
 
-    @media (max-width: 560px) {
-      .profile-header { grid-template-columns: auto 1fr; }
-      .profile-actions { grid-column: 1 / -1; }
-      .profile-actions button { width: 100%; }
-      .profile-avatar { width: 54px; height: 54px; font-size: 22px; }
-      .profile-identity h1 { font-size: 20px; }
-      .profile-tabs { border-radius: 12px; }
-      .profile-tabs button { padding: 10px 13px; font-size: 12px; }
-      .item-grid { grid-template-columns: 1fr; }
+    /* ===== RESPONSIVE PROFILE ===== */
+
+    .profile-page {
+      width: min(1100px, calc(100% - 40px));
+    }
+
+    .item-grid {
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+
+    @media (min-width: 901px) {
+      .profile-page {
+        padding-top: 42px;
+      }
+
+      .profile-header {
+        padding: 28px;
+        gap: 24px;
+      }
+
+      .profile-avatar {
+        width: 76px;
+        height: 76px;
+        font-size: 30px;
+      }
+
+      .profile-identity h1 {
+        font-size: 28px;
+      }
+
+      .profile-tabs {
+        gap: 12px;
+      }
+
+      .profile-tabs button {
+        padding: 12px 22px;
+      }
+
+      .item-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 601px) and (max-width: 900px) {
+      .profile-header {
+        grid-template-columns: auto 1fr;
+      }
+
+      .profile-actions {
+        grid-column: 1 / -1;
+      }
+
+      .item-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 600px) {
+      .profile-page {
+        width: calc(100% - 28px);
+        padding-top: 20px;
+      }
+
+      .profile-header {
+        grid-template-columns: auto 1fr;
+        gap: 14px;
+        padding: 16px;
+      }
+
+      .profile-actions {
+        grid-column: 1 / -1;
+      }
+
+      .profile-actions button,
+      .profile-actions .konveksibos-button {
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+      }
+
+      .profile-avatar {
+        width: 54px;
+        height: 54px;
+        font-size: 22px;
+      }
+
+      .profile-identity h1 {
+        font-size: 20px;
+      }
+
+      .profile-tabs {
+        border-radius: 12px;
+      }
+
+      .profile-tabs button {
+        padding: 10px 13px;
+        font-size: 12px;
+      }
+
+      .item-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
