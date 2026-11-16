@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Diagnostic Profile</title>
+  <style>
+    body {
+      font-family: monospace;
+      background: #101318;
+      color: #e5e7eb;
+      padding: 18px;
+      line-height: 1.6;
+    }
+    h2 { color: #60a5fa; }
+    pre {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      background: #1e293b;
+      padding: 14px;
+      border-radius: 8px;
+    }
+    button {
+      padding: 12px 18px;
+      border: 0;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>🔍 FASTPRODUCTION - PROFILE CHECK</h2>
+  <button onclick="runCheck()">ULANGI PEMERIKSAAN</button>
+  <pre id="output">Memulai pemeriksaan...</pre>
+
+  <script src="assets/js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase.js"></script>
+
+  <script>
+    const output = document.getElementById("output");
+
+    function log(title, value) {
+      output.textContent += "\n\n===== " + title + " =====\n" + value;
+    }
+
+    async function runCheck() {
+      output.textContent = "MEMULAI DIAGNOSTIK...";
+
+      try {
+        const db = window.db;
+
+        log("WINDOW.DB", db ? "TERSEDIA" : "TIDAK TERSEDIA");
+
+        if (!db) return;
+
+        const { data: sessionData, error: sessionError } =
+          await db.auth.getSession();
+
+        log("GET SESSION", JSON.stringify({
+          error: sessionError?.message || null,
+          hasSession: !!sessionData?.session,
+          userId: sessionData?.session?.user?.id || null
+        }, null, 2));
+
+        const { data: authData, error: authError } =
+          await db.auth.getUser();
+
+        log("GET USER", JSON.stringify({
+          error: authError?.message || null,
+          user: authData?.user ? {
+            id: authData.user.id,
+            email: authData.user.email,
+            metadata: authData.user.user_metadata
+          } : null
+        }, null, 2));
+
+        if (authError || !authData?.user) {
+          log("STATUS", "USER TIDAK TERDETEKSI");
+          return;
+        }
+
+        const user = authData.user;
+
+        const { data: profile, error: profileError } = await db
+          .from("profiles")
+          .select("id, full_name, bio, address")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        log("QUERY PROFILES", JSON.stringify({
+          error: profileError?.message || null,
+          code: profileError?.code || null,
+          data: profile
+        }, null, 2));
+
+        const displayName =
+          profile?.full_name ||
+          user.user_metadata?.full_name ||
+          "Pengguna FastProduction";
+
+        log("FALLBACK NAMA", displayName);
+
+        log("HASIL AKHIR", JSON.stringify({
+          authenticated: true,
+          profileFound: !!profile,
+          profileQueryError: !!profileError,
+          metadataName: user.user_metadata?.full_name || null,
+          displayName
+        }, null, 2));
+
+      } catch (error) {
+        log("JAVASCRIPT EXCEPTION", error.stack || error.message);
+      }
+    }
+
+    runCheck();
+  </script>
+</body>
+</html>
