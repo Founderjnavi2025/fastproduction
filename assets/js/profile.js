@@ -7,18 +7,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   const message = document.getElementById("message");
-  const params = new URLSearchParams(location.search);
 
-  const { data: authData, error: authError } = await db.auth.getUser();
+  const { data: { user }, error: authError } = await db.auth.getUser();
 
-  if (authError || !authData.user) {
+  if (authError || !user) {
     location.href = "login.html";
     return;
   }
 
-  const currentUser = authData.user;
-  const targetUserId = params.get("id") || currentUser.id;
-  const isOwnProfile = targetUserId === currentUser.id;
+  const currentUser = user;
+  const targetUserId = user.id;
+  const isOwnProfile = true;
 
   const editButton = document.getElementById("editProfileButton");
   editButton.hidden = !isOwnProfile;
