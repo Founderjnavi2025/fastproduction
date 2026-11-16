@@ -1,122 +1,232 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Diagnostic Profile</title>
-  <style>
-    body {
-      font-family: monospace;
-      background: #101318;
-      color: #e5e7eb;
-      padding: 18px;
-      line-height: 1.6;
-    }
-    h2 { color: #60a5fa; }
-    pre {
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-      background: #1e293b;
-      padding: 14px;
-      border-radius: 8px;
-    }
-    button {
-      padding: 12px 18px;
-      border: 0;
-      border-radius: 8px;
-      background: #2563eb;
-      color: white;
-      font-weight: bold;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FastProduction Profile Diagnostic v2</title>
+<style>
+body {
+  margin:0;padding:16px;
+  background:#101318;color:#e5e7eb;
+  font:14px monospace;
+}
+h2 {color:#60a5fa}
+button {
+  padding:12px 16px;background:#2563eb;
+  color:white;border:0;border-radius:8px;
+  font-weight:bold;margin:5px 0;
+}
+pre {
+  white-space:pre-wrap;overflow-wrap:anywhere;
+  background:#1e293b;padding:14px;
+  border-radius:8px;line-height:1.6;
+}
+iframe {
+  width:100%;height:600px;
+  border:1px solid #475569;
+  border-radius:8px;background:white;
+}
+.ok {color:#4ade80}
+.err {color:#f87171}
+</style>
 </head>
 <body>
-  <h2>🔍 FASTPRODUCTION - PROFILE CHECK</h2>
-  <button onclick="runCheck()">ULANGI PEMERIKSAAN</button>
-  <pre id="output">Memulai pemeriksaan...</pre>
 
-  <script src="assets/js/config.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/js/supabase.js"></script>
+<h2>FASTPRODUCTION - PROFILE DIAGNOSTIC V2</h2>
 
-  <script>
-    const output = document.getElementById("output");
+<button onclick="startDiagnostic()">JALANKAN ULANG DIAGNOSTIK</button>
 
-    function log(title, value) {
-      output.textContent += "\n\n===== " + title + " =====\n" + value;
+<h3>1. Diagnostic Log</h3>
+<pre id="output">Menunggu pemeriksaan...</pre>
+
+<h3>2. Profile HTML Preview</h3>
+<iframe id="profileFrame"></iframe>
+
+<script>
+const output = document.getElementById("output");
+const frame = document.getElementById("profileFrame");
+
+let logs = [];
+
+function log(title, data) {
+  const entry = {
+    time: new Date().toLocaleTimeString(),
+    title,
+    data
+  };
+  logs.push(entry);
+  output.textContent = logs.map(x =>
+    `[${x.time}] ${x.title}\n${
+      typeof x.data === "string"
+        ? x.data
+        : JSON.stringify(x.data, null, 2)
+    }`
+  ).join("\n\n");
+}
+
+async function startDiagnostic() {
+  logs = [];
+  output.textContent = "MEMULAI DIAGNOSTIK...";
+
+  try {
+    // A. Periksa file sumber
+    const [htmlResponse, jsResponse] = await Promise.all([
+      fetch("profile.html", {cache:"no-store"}),
+      fetch("assets/js/profile.js", {cache:"no-store"})
+    ]);
+
+    if (!htmlResponse.ok || !jsResponse.ok) {
+      throw new Error("File profile.html atau profile.js gagal dibaca.");
     }
 
-    async function runCheck() {
-      output.textContent = "MEMULAI DIAGNOSTIK...";
+    const html = await htmlResponse.text();
+    const js = await jsResponse.text();
 
-      try {
-        const db = window.db;
+    log("FILE PROFILE", {
+      htmlStatus: htmlResponse.status,
+      jsStatus: jsResponse.status,
+      htmlSize: html.length,
+      jsSize: js.length
+    });
 
-        log("WINDOW.DB", db ? "TERSEDIA" : "TIDAK TERSEDIA");
+    // B. Periksa urutan script
+    const scripts = [...html.matchAll(/<script\b[^>]*src=["']([^"']+)["'][^>]*>/gi)]
+      .map(x => x[1]);
 
-        if (!db) return;
+    log("URUTAN SCRIPT", scripts);
 
-        const { data: sessionData, error: sessionError } =
-          await db.auth.getSession();
+    const profileIndex = scripts.findIndex(x => x.includes("profile.js"));
+    const supabaseIndex = scripts.findIndex(x => x.includes("supabase.js"));
 
-        log("GET SESSION", JSON.stringify({
-          error: sessionError?.message || null,
-          hasSession: !!sessionData?.session,
-          userId: sessionData?.session?.user?.id || null
-        }, null, 2));
+    log("SCRIPT ORDER CHECK", {
+      supabaseBeforeProfile:
+        supabaseIndex >= 0 && profileIndex > supabaseIndex,
+      profileScriptFound: profileIndex >= 0
+    });
 
-        const { data: authData, error: authError } =
-          await db.auth.getUser();
+    // C. Audit ID HTML dan JS
+    const htmlIds = new Set(
+      [...html.matchAll(/\bid=["']([^"']+)["']/g)].map(x => x[1])
+    );
 
-        log("GET USER", JSON.stringify({
-          error: authError?.message || null,
-          user: authData?.user ? {
-            id: authData.user.id,
-            email: authData.user.email,
-            metadata: authData.user.user_metadata
-          } : null
-        }, null, 2));
+    const jsIds = [...new Set(
+      [...js.matchAll(/getElementById\(["']([^"']+)["']\)/g)]
+        .map(x => x[1])
+    )];
 
-        if (authError || !authData?.user) {
-          log("STATUS", "USER TIDAK TERDETEKSI");
-          return;
-        }
+    const missingIds = jsIds.filter(x => !htmlIds.has(x));
 
-        const user = authData.user;
+    log("DOM ID AUDIT", {
+      htmlIdCount: htmlIds.size,
+      jsIdCount: jsIds.length,
+      missingIds
+    });
 
-        const { data: profile, error: profileError } = await db
-          .from("profiles")
-          .select("id, full_name, bio, address")
-          .eq("id", user.id)
-          .maybeSingle();
+    // D. Analisis titik loading dan render
+    const lines = js.split("\n");
 
-        log("QUERY PROFILES", JSON.stringify({
-          error: profileError?.message || null,
-          code: profileError?.code || null,
-          data: profile
-        }, null, 2));
+    const relevantLines = lines
+      .map((line, i) => ({line:i+1, text:line.trim()}))
+      .filter(x =>
+        /DOMContentLoaded|getUser|getSession|maybeSingle|\.single\(|Promise\.all|profileName|Memuat profil|return;|loadMachines|loadScopes|loadVideos|loadDesigns/.test(x.text)
+      );
 
-        const displayName =
-          profile?.full_name ||
-          user.user_metadata?.full_name ||
-          "Pengguna FastProduction";
+    log("PROFILE EXECUTION MAP", relevantLines);
 
-        log("FALLBACK NAMA", displayName);
+    // E. Inject diagnostic monitor sebelum profile.js
+    const monitor = `
+<script>
+(function() {
+  const report = (type, data) => {
+    parent.postMessage({
+      source: "PROFILE_DIAGNOSTIC",
+      type,
+      data
+    }, location.origin);
+  };
 
-        log("HASIL AKHIR", JSON.stringify({
-          authenticated: true,
-          profileFound: !!profile,
-          profileQueryError: !!profileError,
-          metadataName: user.user_metadata?.full_name || null,
-          displayName
-        }, null, 2));
+  window.addEventListener("error", e => {
+    report("JAVASCRIPT ERROR", {
+      message:e.message,
+      file:e.filename,
+      line:e.lineno,
+      column:e.colno
+    });
+  });
 
-      } catch (error) {
-        log("JAVASCRIPT EXCEPTION", error.stack || error.message);
-      }
+  window.addEventListener("unhandledrejection", e => {
+    report("UNHANDLED REJECTION", {
+      reason:String(e.reason),
+      stack:e.reason?.stack
+    });
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    report("DOM CONTENT LOADED", {
+      readyState:document.readyState,
+      profileNameExists:!!document.getElementById("profileName"),
+      message:document.getElementById("message")?.textContent
+    });
+
+    const observer = new MutationObserver(() => {
+      const name = document.getElementById("profileName");
+      const message = document.getElementById("message");
+
+      report("DOM MUTATION", {
+        profileName:name?.textContent,
+        message:message?.textContent
+      });
+    });
+
+    observer.observe(document.body, {
+      subtree:true,
+      childList:true,
+      characterData:true
+    });
+  });
+
+  window.addEventListener("load", () => {
+    report("PROFILE WINDOW LOAD", {
+      readyState:document.readyState,
+      profileName:document.getElementById("profileName")?.textContent,
+      message:document.getElementById("message")?.textContent
+    });
+  });
+})();
+<\/script>
+`;
+
+    const profileScriptPattern =
+      /(<script\b[^>]*src=["'][^"']*profile\.js(?:\?[^"']*)?["'][^>]*>)/i;
+
+    if (!profileScriptPattern.test(html)) {
+      log("IFRAME ERROR", "Tag profile.js tidak ditemukan.");
+      return;
     }
 
-    runCheck();
-  </script>
+    const instrumentedHtml = html.replace(
+      profileScriptPattern,
+      monitor + "\n$1"
+    );
+
+    log("INSTRUMENTATION", "Monitor dipasang sebelum profile.js.");
+
+    frame.srcdoc = instrumentedHtml;
+
+    log("IFRAME", "Menjalankan profile.html asli dengan monitor aktif.");
+
+  } catch (error) {
+    log("DIAGNOSTIC ERROR", error.stack || error.message);
+  }
+}
+
+window.addEventListener("message", event => {
+  if (event.origin !== location.origin) return;
+  if (event.data?.source !== "PROFILE_DIAGNOSTIC") return;
+
+  log(event.data.type, event.data.data);
+});
+
+</script>
 </body>
 </html>
