@@ -61,8 +61,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Lab Production hanya tersedia di profil pemilik akun yang sedang login.
   tabs.labProduction.hidden = !isOwnProfile;
 
-  document.getElementById("manageVideosLink").hidden = !isOwnProfile;
-  document.getElementById("manageDesignsLink").hidden = !isOwnProfile;
+  const manageVideosLink = document.getElementById("manageVideosLink");
+  const manageDesignsLink = document.getElementById("manageDesignsLink");
+
+  if (manageVideosLink) {
+    manageVideosLink.hidden = !isOwnProfile;
+  } else {
+    console.warn("[PROFILE] Elemen manageVideosLink tidak ditemukan.");
+  }
+
+  if (manageDesignsLink) {
+    manageDesignsLink.hidden = !isOwnProfile;
+  } else {
+    console.warn("[PROFILE] Elemen manageDesignsLink tidak ditemukan.");
+  }
 
   /* ---------- LAB PRODUCTION SSO ---------- */
 
