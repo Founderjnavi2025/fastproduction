@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FastProduction - Diagnostic</title>
+<style>
+  body {
+    background:#101418;
+    color:#e8edf2;
+    font-family:Arial,sans-serif;
+    padding:20px;
+    line-height:1.5;
+  }
+  h2 { color:#9bd477; }
+  button {
+    padding:12px 18px;
+    background:#9bd477;
+    border:0;
+    border-radius:8px;
+    font-weight:bold;
+  }
+  pre {
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+    background:#1b2229;
+    padding:14px;
+    border-radius:9px;
+    font-size:13px;
+  }
+  .muted { color:#aab4bf; }
+</style>
+</head>
+<body>
+<h2>FastProduction Diagnostic</h2>
+<p class="muted">Pemeriksaan koneksi, autentikasi, dan profil Supabase.</p>
+<button id="run">Jalankan Pemeriksaan</button>
+<pre id="output">Menunggu pemeriksaan...</pre>
+
+<script src="assets/js/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase.js"></script>
+
+<script>
+const output = document.getElementById("output");
+const runButton = document.getElementById("run");
+
+function log(label, value = "") {
+  output.textContent += "\n[" + new Date().toLocaleTimeString() + "] "
+    + label + (value ? "\n" + value : "");
+}
+
+function timeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(label + " TIMEOUT (" + ms + " ms)")), ms)
+    )
+  ]);
+}
+
+window.addEventListener("error", e => {
+  log("JAVASCRIPT ERROR", e.message + " | " + e.filename + ":" + e.lineno);
+});
+
+window.addEventListener("unhandledrejection", e => {
+  log("ASYNC ERROR", e.reason?.message || String(e.reason));
+});
+
+async function diagnose() {
+  output.textContent = "Memulai pemeriksaan...";
+  runButton.disabled = true;
+
+  try {
+    log("1. CONFIG", window.FASTPRODUCTION_CONFIG ? "Tersedia" : "TIDAK ADA");
+
+    log("2. SUPABASE CDN",
+      window.supabase?.createClient ? "Tersedia" : "TIDAK TERSEDIA");
+
+    log("3. SUPABASE CLIENT",
+      window.db ? "window.db tersedia" : "window.db TIDAK tersedia");
+
+    if (!window.db) throw new Error("Supabase client belum terbentuk.");
+
+    log("4. MEMERIKSA SESSION...");
+    const sessionResult = await timeout(
+      window.db.auth.getSession(), 15000, "getSession"
+    );
+
+    if (sessionResult.error) throw sessionResult.error;
+
+    const session = sessionResult.data.session;
+    log("SESSION", session
+      ? "Ada. User ID: " + session.user.id
+      : "Tidak ada sesi login");
+
+    log("5. MEMERIKSA USER...");
+    const userResult = await timeout(
+      window.db.auth.getUser(), 15000, "getUser"
+    );
+
+    if (userResult.error) throw userResult.error;
+
+    const user = userResult.data.user;
+    if (!user) throw new Error("User tidak ditemukan. Silakan login.");
+
+    const requestedId = new URLSearchParams(location.search).get("id");
+    const targetId = requestedId || user.id;
+
+    log("USER", "ID login: " + user.id);
+    log("TARGET PROFILE ID", targetId +
+      (requestedId ? " (dari parameter URL)" : " (ID login)"));
+
+    log("6. QUERY TABEL PROFILES...");
+    const profileResult = await timeout(
+      window.db.from("profiles")
+        .select("id, full_name, bio, address")
+        .eq("id", targetId)
+        .maybeSingle(),
+      20000,
+      "Query profiles"
+    );
+
+    if (profileResult.error) {
+      log("PROFILE QUERY ERROR",
+        JSON.stringify(profileResult.error, null, 2));
+      throw profileResult.error;
+    }
+
+    if (!profileResult.data) {
+      log("PROFILE", "Tidak ada baris profil untuk ID user ini.");
+    } else {
+      log("PROFILE BERHASIL",
+        JSON.stringify(profileResult.data, null, 2));
+    }
+
+    log("7. SELESAI", "Pemeriksaan selesai.");
+  } catch (error) {
+    log("PEMERIKSAAN GAGAL",
+      error?.message || String(error));
+  } finally {
+    runButton.disabled = false;
+  }
+}
+
+runButton.addEventListener("click", diagnose);
+diagnose();
+</script>
+</body>
+</html>

@@ -2,7 +2,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const db = window.db;
 
   if (!db) {
-    location.href = "login.html";
+    document.getElementById("profileName").textContent = "Koneksi gagal";
+    document.getElementById("profileBio").textContent = "Supabase belum terhubung. Periksa config.js dan supabase.js.";
+    document.getElementById("message").textContent = "Supabase belum terhubung. Periksa config.js dan supabase.js.";
     return;
   }
 
@@ -173,19 +175,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     .eq("id", targetUserId)
     .maybeSingle();
 
-  if (profileError || !profile) {
-    message.textContent = profileError?.message || "Profil tidak ditemukan.";
-    return;
-  }
+  // FIX: jangan return kalau profile null, pake fallback
+  const displayName =
+    profile?.full_name ||
+    currentUser.user_metadata?.full_name ||
+    "Pengguna FastProduction";
 
-  document.getElementById("profileName").textContent =
-    profile.full_name || "Pengguna FastProduction";
+  document.getElementById("profileName").textContent = displayName;
   document.getElementById("profileAvatar").textContent =
-    (profile.full_name || "U").trim().charAt(0).toUpperCase();
+    displayName.trim().charAt(0).toUpperCase() || "U";
   document.getElementById("profileBio").textContent =
-    profile.bio || "Belum ada bio.";
+    profile?.bio || "Belum ada bio.";
   document.getElementById("profileAddress").textContent =
-    profile.address || "";
+    profile?.address || "";
+
+  // Cuma tampilin error kalau beneran gagal query (bukan karena null)
+  if (profileError) {
+    message.textContent = "Gagal memuat profil: " + profileError.message;
+  }
 
   /* ---------- HELPERS ---------- */
 
