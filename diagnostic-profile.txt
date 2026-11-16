@@ -1,0 +1,212 @@
+===== PROFILE.JS BARIS 1-190 =====
+     1	document.addEventListener("DOMContentLoaded", async () => {
+     2	  const db = window.db;
+     3	
+     4	  if (!db) {
+     5	    location.href = "login.html";
+     6	    return;
+     7	  }
+     8	
+     9	  const message = document.getElementById("message");
+    10	  const params = new URLSearchParams(location.search);
+    11	
+    12	  const { data: authData, error: authError } = await db.auth.getUser();
+    13	
+    14	  if (authError || !authData.user) {
+    15	    location.href = "login.html";
+    16	    return;
+    17	  }
+    18	
+    19	  const currentUser = authData.user;
+    20	  const targetUserId = params.get("id") || currentUser.id;
+    21	  const isOwnProfile = targetUserId === currentUser.id;
+    22	
+    23	  const editButton = document.getElementById("editProfileButton");
+    24	  editButton.hidden = !isOwnProfile;
+    25	  editButton.addEventListener("click", () => {
+    26	    location.href = "edit-profile.html";
+    27	  });
+    28	
+    29	  /* ---------- TABS ---------- */
+    30	
+    31	  const tabs = {
+    32	    machines: document.getElementById("machinesTab"),
+    33	    scopes: document.getElementById("scopesTab"),
+    34	    videos: document.getElementById("videosTab"),
+    35	    designs: document.getElementById("designsTab"),
+    36	    labProduction: document.getElementById("labProductionTab")
+    37	  };
+    38	
+    39	  const panels = {
+    40	    machines: document.getElementById("machinesPanel"),
+    41	    scopes: document.getElementById("scopesPanel"),
+    42	    videos: document.getElementById("videosPanel"),
+    43	    designs: document.getElementById("designsPanel"),
+    44	    labProduction: document.getElementById("labProductionPanel")
+    45	  };
+    46	
+    47	  function showTab(name) {
+    48	    Object.keys(tabs).forEach(key => {
+    49	      const active = key === name;
+    50	      tabs[key].classList.toggle("active", active);
+    51	      tabs[key].setAttribute("aria-selected", active ? "true" : "false");
+    52	      panels[key].hidden = !active;
+    53	    });
+    54	  }
+    55	
+    56	  Object.keys(tabs).forEach(name => {
+    57	    tabs[name].addEventListener("click", () => showTab(name));
+    58	  });
+    59	
+    60	  // Lab Production hanya tersedia di profil pemilik akun yang sedang login.
+    61	  tabs.labProduction.hidden = !isOwnProfile;
+    62	
+    63	  document.getElementById("manageVideosLink").hidden = !isOwnProfile;
+    64	  document.getElementById("manageDesignsLink").hidden = !isOwnProfile;
+    65	
+    66	  /* ---------- LAB PRODUCTION SSO ---------- */
+    67	
+    68	  const labButton = document.getElementById("openLabProduction");
+    69	  const labStatus = document.getElementById("labProductionStatus");
+    70	
+    71	  if (labButton && labStatus) {
+    72	    labButton.addEventListener("click", async () => {
+    73	      if (!isOwnProfile || labButton.disabled) return;
+    74	
+    75	      // Buka tab lebih awal agar tidak diblokir popup blocker.
+    76	      const popup = window.open("about:blank", "_blank");
+    77	
+    78	      if (!popup) {
+    79	        labStatus.textContent =
+    80	          "Popup diblokir browser. Izinkan popup untuk FastProduction lalu coba lagi.";
+    81	        return;
+    82	      }
+    83	
+    84	      labButton.disabled = true;
+    85	      labButton.textContent = "Menghubungkan...";
+    86	      labStatus.textContent = "Memverifikasi akun FastProduction...";
+    87	
+    88	      try {
+    89	        const { data: sessionData, error: sessionError } =
+    90	          await db.auth.getSession();
+    91	
+    92	        if (sessionError) throw sessionError;
+    93	
+    94	        const accessToken = sessionData.session?.access_token;
+    95	        if (!accessToken) {
+    96	          throw new Error("Sesi FastProduction tidak ditemukan. Silakan login ulang.");
+    97	        }
+    98	
+    99	        labStatus.textContent = "Menghubungkan ke KonveksiBos...";
+   100	
+   101	        // Supabase client otomatis mengirim access token sesi FastProduction.
+   102	        const response = await fetch(
+   103	          "https://pbwkjdtqhzmqtcecsjot.supabase.co/functions/v1/fastproduction-sso",
+   104	          {
+   105	            method: "POST",
+   106	            headers: {
+   107	              "Content-Type": "application/json",
+   108	              "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBid2tqZHRxaHptcXRjZWNzam90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5NjI0NDAsImV4cCI6MjEwOTUzODQ0MH0.22jUMqyd1UoECMGzD1eB9clcHdS-N3gmySRA4yQW-ZM",
+   109	              "Authorization": `Bearer ${accessToken}`
+   110	            },
+   111	            body: JSON.stringify({})
+   112	          }
+   113	        );
+   114	
+   115	        const data = await response.json().catch(() => ({}));
+   116	        const error = !response.ok
+   117	          ? { message: data?.error || `HTTP ${response.status}` }
+   118	          : null;
+   119	
+   120	        if (error) {
+   121	          let detail = error.message || "SSO gagal";
+   122	
+   123	          try {
+   124	            const response = await error.context?.json();
+   125	            if (response?.error) detail = response.error;
+   126	          } catch (_) {}
+   127	
+   128	          throw new Error(detail);
+   129	        }
+   130	
+   131	        if (!data?.success || !data?.token_hash || !data?.room_id) {
+   132	          throw new Error(data?.error || "Respons SSO tidak lengkap.");
+   133	        }
+   134	
+   135	        // Token hash dikirim lewat URL fragment agar tidak ikut dikirim ke server web.
+   136	        const handoff = new URLSearchParams({
+   137	          token_hash: data.token_hash,
+   138	          type: data.type || "magiclink",
+   139	          room_id: data.room_id
+   140	        });
+   141	
+   142	        const destination =
+   143	          "https://konveksibos.vercel.app/#sso=" +
+   144	          encodeURIComponent(handoff.toString());
+   145	
+   146	        labStatus.textContent =
+   147	          "Berhasil terhubung. Membuka workspace produksi...";
+   148	
+   149	        popup.location.replace(destination);
+   150	
+   151	      } catch (err) {
+   152	        console.error("LAB PRODUCTION SSO ERROR:", err);
+   153	
+   154	        try {
+   155	          popup.close();
+   156	        } catch (_) {}
+   157	
+   158	        labStatus.textContent =
+   159	          "Gagal membuka Lab Production: " +
+   160	          (err.message || "Kesalahan tidak diketahui");
+   161	
+   162	      } finally {
+   163	        labButton.disabled = false;
+   164	        labButton.textContent = "Masuk Lab Production →";
+   165	      }
+   166	    });
+   167	  }
+   168	
+   169	  /* ---------- PROFILE ---------- */
+   170	
+   171	  const { data: profile, error: profileError } = await db
+   172	    .from("profiles")
+   173	    .select("id, full_name, bio, address")
+   174	    .eq("id", targetUserId)
+   175	    .maybeSingle();
+   176	
+   177	  if (profileError || !profile) {
+   178	    message.textContent = profileError?.message || "Profil tidak ditemukan.";
+   179	    return;
+   180	  }
+   181	
+   182	  document.getElementById("profileName").textContent =
+   183	    profile.full_name || "Pengguna FastProduction";
+   184	  document.getElementById("profileAvatar").textContent =
+   185	    (profile.full_name || "U").trim().charAt(0).toUpperCase();
+   186	  document.getElementById("profileBio").textContent =
+   187	    profile.bio || "Belum ada bio.";
+   188	  document.getElementById("profileAddress").textContent =
+   189	    profile.address || "";
+   190	
+
+===== SCRIPT PROFILE HTML =====
+437:  <script src="assets/js/config.js"></script>
+438:  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+439:  <script src="assets/js/supabase.js"></script>
+441:  <script src="assets/js/profile.js?v=lab-sso-2"></script>
+
+===== UKURAN DAN HASH FILE =====
+517 assets/js/profile.js
+b3fee47b96342abd76feec4831e85b0603431feb8c45de00abfa312f65a94df4  assets/js/profile.js
+
+===== REFERENSI ELEMENT NAMA =====
+339-    <header class="profile-header">
+340-      <div class="profile-avatar" id="profileAvatar">U</div>
+341-      <div class="profile-identity">
+342:        <h1 id="profileName">Memuat profil...</h1>
+343-        <p id="profileBio">Memuat informasi pengguna</p>
+344-        <span id="profileAddress"></span>
+345-      </div>
+346-      <div class="profile-actions">
+347-        <button id="editProfileButton" hidden>Edit Profil</button>

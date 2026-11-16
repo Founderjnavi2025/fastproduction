@@ -104,13 +104,18 @@ async function diagnose() {
     const user = userResult.data.user;
     if (!user) throw new Error("User tidak ditemukan. Silakan login.");
 
-    log("USER", "ID: " + user.id + "\nEmail: " + (user.email || "(kosong)"));
+    const requestedId = new URLSearchParams(location.search).get("id");
+    const targetId = requestedId || user.id;
+
+    log("USER", "ID login: " + user.id);
+    log("TARGET PROFILE ID", targetId +
+      (requestedId ? " (dari parameter URL)" : " (ID login)"));
 
     log("6. QUERY TABEL PROFILES...");
     const profileResult = await timeout(
       window.db.from("profiles")
         .select("id, full_name, bio, address")
-        .eq("id", user.id)
+        .eq("id", targetId)
         .maybeSingle(),
       20000,
       "Query profiles"
